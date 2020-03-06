@@ -2,6 +2,29 @@
 
 This tool publishes to a Google Drive sheet whatever content tubed in stdin
 
+## Installation
+
+It is recommended to install the dependencies in a virtual environment for not mangling
+the host ones. You need to have *python3* installed on your system first
+
+```sh
+sudo apt install -y python3 python3-pip
+```
+
+then, you can create and activate your virtual env
+```sh
+sudo apt install -y virtualenv
+python3 -m virtualenv -p python3 venv
+source venv/bin/activate
+```
+
+and finally, install dependencies
+```sh
+pip install -r requirements.txt
+```
+
+You are now good to go
+
 ## Execution example
 
 Provide any content and tube it to the script:
@@ -26,3 +49,5 @@ newman run -e environment.json collection.json -r msgs | ./dpub.py 1o8wahJ8qTIlH
 > Otherwise the character ! will take some meaning out of the literal one.
 
 
+## Hack
+It is recommended
