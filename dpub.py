@@ -12,13 +12,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 _TOKEN_PICKLE = 'token.pickle'
-_CREDS_FILE = 'drive-credentials.json'
+_CREDS_FILE = 'credentials.json'
 _DOC_ACCESS_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 _EXCEL_2007_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 _SHEETS_SERVICE = 'sheets'
 _SHEETS_SERVICE_VERSION = 'v4'
-
 
 class PublishToDriveError(Exception):
     pass
@@ -85,8 +84,9 @@ def _write(document, cell, content, credentials):
 def _parse_args():
     parser = ArgumentParser()
     parser.add_argument(
-        'sheet', help='The spreadsheet id in Google Drive where publishing')
-    parser.add_argument('cell', help='The cell where publishing')
+        'spreadsheet', help='The spreadsheet id in Google Drive where publishing')
+    parser.add_argument('sheet_name', help='The sheet where publishing')
+    parser.add_argument('column', help='The first column where publishing')
     parser.add_argument('-c', '--credentials', help='path to the credentials file',
                         default='./{}'.format(_CREDS_FILE))
     parser.add_argument('-t', '--token', help='path to the access token file',
@@ -103,8 +103,46 @@ def _parse_args():
 def main():
     args = _parse_args()
     creds = _lookup_credentials(args.credentials, args.token)
-    msgs = _pipe_in()
-    _write(args.sheet, args.cell, msgs, creds)
+    #msgs = _pipe_in()
+    incrange=1
+    areq=0
+    ares=0
+    #column="B"
+    control="nada"
+    arresponse=[]
+    arrequest=[]
+    reqjoin=[]
+    resjoin=[]
+    #sheet_name="Hoja"
+
+    for line in sys.stdin:
+     sys.stdout.write(line)
+     if "========================" in line:
+      control="request"
+      incrange += 1
+      if incrange > 2:
+       columnres=chr(ord(args.column)+1)
+       reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,incrange)
+       resrange="\'{}\'!{}{}".format(args.sheet_name,columnres,incrange)
+       reqjoin=''.join(arrequest)  #Cambiar guion por salto de linea
+       resjoin=''.join(arresponse) #Cambiar guion por salto de linea
+       _write(args.spreadsheet, reqrange, reqjoin, creds)
+       _write(args.spreadsheet, resrange, resjoin, creds)
+       #Reinitializing arrays
+       areq=0
+       ares=0
+       arresponse[:] = []
+       arrequest[:] = []
+     elif "------------------------" in line:
+      control="response"
+    
+     if control == "request":   
+      arrequest.append(line)
+      areq += 1
+    
+     if control == "response":   
+      arresponse.append(line)
+      ares += 1
 
 
 if __name__ == "__main__":
