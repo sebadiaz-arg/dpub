@@ -2,6 +2,9 @@
 #
 # Copyright (C) 2020 Telefónica S.A. All Rights Reserved
 #
+# The content of stdin expected by this script must to have these marks:
+# "========================" before a Request and "------------------------" before a Response.
+
 import os
 import pickle
 import sys
@@ -103,47 +106,47 @@ def _parse_args():
 def main():
     args = _parse_args()
     creds = _lookup_credentials(args.credentials, args.token)
-    #msgs = _pipe_in()
     incrange=1
     areq=0
     ares=0
-    #column="B"
-    control="nada"
+    columnres=chr(ord(args.column)+1)
+    control=""
     arresponse=[]
     arrequest=[]
     reqjoin=[]
     resjoin=[]
-    #sheet_name="Hoja"
 
+    #We'll read the stdin line by line, putting the Response in one array and the Request in another one. 
     for line in sys.stdin:
-     sys.stdout.write(line)
+     if "========================" not in line and "------------------------" not in line:
+       if control == "request":
+        arrequest.append(line)
+        areq += 1
+      
+       if control == "response":   
+        arresponse.append(line)
+        ares += 1
+
      if "========================" in line:
-      control="request"
-      incrange += 1
-      if incrange > 2:
-       columnres=chr(ord(args.column)+1)
+      control="request"   #We have found a Request
+      if incrange > 1:
+       #We prepare the position to insert the Request and Response into the spreadsheet.
        reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,incrange)
        resrange="\'{}\'!{}{}".format(args.sheet_name,columnres,incrange)
+       #After getting a Request and a Response, line by line into an array, we join the content to get a string for each one.
        reqjoin=''.join(arrequest)  #Cambiar guion por salto de linea
        resjoin=''.join(arresponse) #Cambiar guion por salto de linea
-       _write(args.spreadsheet, reqrange, reqjoin, creds)
-       _write(args.spreadsheet, resrange, resjoin, creds)
-       #Reinitializing arrays
+       _write(args.spreadsheet, reqrange, reqjoin, creds)   #Inserting Request into spreadsheet
+       _write(args.spreadsheet, resrange, resjoin, creds)   #Inserting Response into spreadsheet
+       #Reinitializing arrays to retrieve the next Requests/Responses.
        areq=0
        ares=0
        arresponse[:] = []
        arrequest[:] = []
-     elif "------------------------" in line:
-      control="response"
-    
-     if control == "request":   
-      arrequest.append(line)
-      areq += 1
-    
-     if control == "response":   
-      arresponse.append(line)
-      ares += 1
 
+      incrange += 1   #Next arrow to be fullfill.
+     elif "------------------------" in line:
+      control="response"   #We've found a Response
 
 if __name__ == "__main__":
     main()
