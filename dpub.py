@@ -3,7 +3,9 @@
 # Copyright (C) 2020 Telefónica S.A. All Rights Reserved
 #
 # The content of stdin expected by this script must to have these marks:
-# "========================" before a Request and "------------------------" before a Response.
+# "========================" before a Request
+# "------------------------" before a Response
+# "************************" at the end of file
 
 import os
 import pickle
@@ -75,9 +77,9 @@ def _write(document, cell, content, credentials):
 
     body = {
         'range': cell,
-        'majorDimension': 'ROWS',
+        'majorDimension': 'COLUMNS',
         'values': [
-            [content],
+            content[0],content[1]
         ]
     }
 
@@ -107,49 +109,50 @@ def _parse_args():
 def main():
     args = _parse_args()
     creds = _lookup_credentials(args.credentials, args.token)
-#incrange is to follow the row position where we'll insert text into a spreadsheet. 
-#The first insertion will be on incrange=2, because the first row in the spreadsheet has the titles.
-    incrange=1
+#nextrow is to follow the row position where we'll insert text into a spreadsheet. 
+#The first insertion will be on nextrow=2, because the first row in the spreadsheet has the titles.
+    nextrow=1
     areq=0
     ares=0
-    columnres=chr(ord(args.column)+1)
     control=""
     arresponse=[]
     arrequest=[]
     reqjoin=[]
     resjoin=[]
-
+    content=[]   #An arrays of arrays where content[0] will have the Requests arrays and content[1] the Responses arrays.
+    print("The sheetname is:")
+    print(args.sheet_name)
+    reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,nextrow)
     #We'll read the stdin line by line, putting the Response in one array and the Request in another one. 
     for line in sys.stdin:
-     if "========================" not in line and "------------------------" not in line:
+     if "========================" not in line and "------------------------" not in line and "************************" not in line:
        if control == "request":
         arrequest.append(line)
         areq += 1
-      
-       if control == "response":   
+       elif control == "response":   
         arresponse.append(line)
         ares += 1
 
-     if "========================" in line:
+     if "************************" in line or "========================" in line:
       control="request"   #We have found a Request
-      if incrange > 1:
+      if nextrow > 1:
        #We prepare the position to insert the Request and Response into the spreadsheet.
-       reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,incrange)
-       resrange="\'{}\'!{}{}".format(args.sheet_name,columnres,incrange)
        #After getting a Request and a Response, line by line into an array, we join the content to get a string for each one.
-       reqjoin=''.join(arrequest)  #The "-" must be changed by CR or new line.
-       resjoin=''.join(arresponse) #The "-" must be changed by CR or new line.
-       _write(args.spreadsheet, reqrange, reqjoin, creds)   #Inserting Request into spreadsheet
-       _write(args.spreadsheet, resrange, resjoin, creds)   #Inserting Response into spreadsheet
+       reqjoin.append(''.join(arrequest))
+       resjoin.append(''.join(arresponse))
        #Reinitializing arrays to retrieve the next Requests/Responses.
        areq=0
        ares=0
        arresponse[:] = []
        arrequest[:] = []
 
-      incrange += 1   #Next arrow to be fullfill.
+      nextrow += 1   #Next arrow to be fullfill.
      elif "------------------------" in line:
       control="response"   #We've found a Response
+
+    content.append(reqjoin)
+    content.append(resjoin)
+    _write(args.spreadsheet, reqrange, content, creds)   #Inserting Request into spreadsheet
 
 if __name__ == "__main__":
     main()
