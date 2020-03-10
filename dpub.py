@@ -134,7 +134,7 @@ def main():
        reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,incrange)
        resrange="\'{}\'!{}{}".format(args.sheet_name,columnres,incrange)
        #After getting a Request and a Response, line by line into an array, we join the content to get a string for each one.
-       reqjoin=''.join(arrequest)  #Cambiar guion por salto de linea
+       reqjoin=''.join(arrequest)  #The "-" must be changed by CR or new line.
        resjoin=''.join(arresponse) #Cambiar guion por salto de linea
        _write(args.spreadsheet, reqrange, reqjoin, creds)   #Inserting Request into spreadsheet
        _write(args.spreadsheet, resrange, resjoin, creds)   #Inserting Response into spreadsheet
