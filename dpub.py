@@ -109,9 +109,9 @@ def _parse_args():
 def main():
     args = _parse_args()
     creds = _lookup_credentials(args.credentials, args.token)
-#nextrow is to follow the row position where we'll insert text into a spreadsheet. 
-#The first insertion will be on nextrow=2, because the first row in the spreadsheet has the titles.
-    nextrow=1
+#row is to follow the row position where we'll insert text into a spreadsheet. 
+#The first insertion will be on row=2, because the first row in the spreadsheet has the titles.
+    row=1
     areq=0
     ares=0
     control=""
@@ -120,9 +120,9 @@ def main():
     reqjoin=[]
     resjoin=[]
     content=[]   #An arrays of arrays where content[0] will have the Requests arrays and content[1] the Responses arrays.
-    print("The sheetname is:")
-    print(args.sheet_name)
-    reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,nextrow)
+
+    #Preparing the info to indicate where begin the location to paste the data into the spreadsheet.
+    reqrange="\'{}\'!{}{}".format(args.sheet_name,args.column,row)
     #We'll read the stdin line by line, putting the Response in one array and the Request in another one. 
     for line in sys.stdin:
      if "========================" not in line and "------------------------" not in line and "************************" not in line:
@@ -135,7 +135,7 @@ def main():
 
      if "************************" in line or "========================" in line:
       control="request"   #We have found a Request
-      if nextrow > 1:
+      if row > 1:
        #We prepare the position to insert the Request and Response into the spreadsheet.
        #After getting a Request and a Response, line by line into an array, we join the content to get a string for each one.
        reqjoin.append(''.join(arrequest))
@@ -146,7 +146,7 @@ def main():
        arresponse[:] = []
        arrequest[:] = []
 
-      nextrow += 1   #Next arrow to be fullfill.
+      row += 1   #Next arrow to be fullfill.
      elif "------------------------" in line:
       control="response"   #We've found a Response
 
