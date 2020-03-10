@@ -107,6 +107,8 @@ def _parse_args():
 def main():
     args = _parse_args()
     creds = _lookup_credentials(args.credentials, args.token)
+#incrange is to follow the row position where we'll insert text into a spreadsheet. 
+#The first insertion will be on incrange=2, because the first row in the spreadsheet has the titles.
     incrange=1
     areq=0
     ares=0
