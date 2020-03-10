@@ -15,7 +15,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 _TOKEN_PICKLE = 'token.pickle'
-_CREDS_FILE = 'credentials.json'
+#Here you must add the credentials filename you've in the same folder.
+_CREDS_FILE = 'drive-credentials.json'
 _DOC_ACCESS_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 _EXCEL_2007_MIME_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
