@@ -110,7 +110,7 @@ def _parse_args():
 def insertOneByOne(listToInsert, listInSheet):
     for listToInsert[0] in line:
         pos=position de line en Lista
-        post lista_a_insertar[1] en posicion correspondiente
+        POST lista_a_insertar[1] en posicion correspondiente
 
 
 def main():
@@ -121,8 +121,10 @@ def main():
     column=args.cell[0]  #Column letter
     row=int(args.cell[1:])   #Row number
     control=""
+    testcase=""
     arresponse=[]
     arrequest=[]
+    testjoin=[]
     reqjoin=[]
     resjoin=[]
     content=[]   #An arrays of arrays where content[0] will have the Requests arrays and content[1] the Responses arrays.
@@ -132,7 +134,9 @@ def main():
     #We'll read the stdin line by line, putting the Response in one array and the Request in another one. 
     for line in sys.stdin:
      if "========================" not in line and "------------------------" not in line and "************************" not in line:
-       if control == "request":
+       if "Test case: " in line:
+        testcase=(line[11:])
+       elif control == "request":
         arrequest.append(line)
        elif control == "response":   
         arresponse.append(line)
@@ -142,6 +146,7 @@ def main():
       if arrequest != []:
        #We prepare the position to insert the Request and Response into the spreadsheet.
        #After getting a Request and a Response, line by line into an array, we join the content to get a string for each one.
+       testjoin.append(testcase)
        reqjoin.append(''.join(arrequest))
        resjoin.append(''.join(arresponse))
        #Reinitializing arrays to retrieve the next Requests/Responses.
@@ -151,9 +156,10 @@ def main():
      elif "------------------------" in line:
       control="response"   #We've found a Response
 
-    content.append(reqjoin)   #Inserting the array with the requests in content[0]
-    content.append(resjoin)   #Inserting the array with the responses in content[1]
-    _write(args.spreadsheet, reqrange, content, creds)   #Inserting Request into spreadsheet
+    content.append(testjoin)  #Inserting the array with the test case names in content[0]
+    content.append(reqjoin)   #Inserting the array with the requests in content[1]
+    content.append(resjoin)   #Inserting the array with the responses in content[2]
+    _write(args.spreadsheet, reqrange, content, creds)   #Inserting Requests and Responses into spreadsheet
 
 if __name__ == "__main__":
     main()
