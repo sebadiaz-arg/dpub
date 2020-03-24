@@ -47,7 +47,3 @@ newman run -e environment.json collection.json -r msgs | ./dpub.py 1o8wahJ8qTIlH
 
 > NOTE: You have to provide the cells range between single quotes for command not to fail.
 > Otherwise the character ! will take some meaning out of the literal one.
-
-
-## Hack
-It is recommended

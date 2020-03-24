@@ -61,11 +61,6 @@ def _lookup_credentials(client_secrets_file, token_pickle_file):
     return creds
 
 
-
-
-
-
-
 def _parse_args():
     parser = ArgumentParser()
     parser.add_argument(

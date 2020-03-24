@@ -2,3 +2,5 @@ token.pickle
 drive-credentials.json
 .vscode
 venv
+.tox
+*.egg-info
