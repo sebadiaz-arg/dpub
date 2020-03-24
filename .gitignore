@@ -4,3 +4,5 @@ drive-credentials.json
 venv
 .tox
 *.egg-info
+.coverage
+htmlcov
