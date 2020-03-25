@@ -7,5 +7,4 @@ venv
 .coverage
 htmlcov
 __pycache__
-dpub/__pycache__
-test/__pycache__
+*/__pycache__

@@ -31,8 +31,8 @@ def _validate_cell_ref(cell_ref):
 
 
 # TODO READ AND WRITE DIMENSIONS ARE FIX NOW. Must be addressed later
-def run(read_dimension=drive.ROWS_DIMENSION,
-        write_dimension=drive.COLS_DIMENSION):
+def run(read_dimension=drive.COLS_DIMENSION,
+        write_dimension=drive.ROWS_DIMENSION):
     '''Do it'''
     args = cli.parse_args()
     doc = args.spreadsheet
@@ -57,8 +57,6 @@ def run(read_dimension=drive.ROWS_DIMENSION,
     # For every test, write the related traces
     for _, t in tests_map.items():
         m_range = t.first_message_range
-        # TODO TRACE
-        print('M_RANGE: {}'.format(m_range))
         for it in t.items:
             _write_trace(d, doc, it, m_range, write_dimension)
 
@@ -79,8 +77,8 @@ def _read_tests_map(drive,
                     doc,
                     first_test_id_range,
                     first_message_range,
-                    read_dimension=drive.ROWS_DIMENSION,
-                    write_dimension=drive.COLS_DIMENSION):
+                    read_dimension=drive.COLS_DIMENSION,
+                    write_dimension=drive.ROWS_DIMENSION):
     '''Reads the tests ids from the spreadsheet and composes a map
     whose keys are the test ids and the values the range where writting
     the first trace message'''
@@ -97,7 +95,7 @@ def _read_tests_map(drive,
             break
         tests_map[id] = Test(id, m_range)
 
-        m_cell = _next_cell(m_cell, write_dimension)
+        m_cell = _next_cell(m_cell, read_dimension)
         m_range = _join_range(m_sheet, m_cell)
 
         t_cell = _next_cell(t_cell, read_dimension)
@@ -106,7 +104,7 @@ def _read_tests_map(drive,
     return tests_map
 
 
-def _write_trace(drive, doc, item, range, dimension=drive.COLS_DIMENSION):
+def _write_trace(drive, doc, item, range, dimension=drive.ROWS_DIMENSION):
     '''Writes the trace to the indicated range, one message per cell'''
     # TODO COMPLETE the other cases. this first version writes in a
     # cell the request and the next column the response
@@ -124,9 +122,9 @@ def _next_cell(cell, dimension=drive.ROWS_DIMENSION):
         raise DPubError('Cell to fetch spreadsheet info is None')
     letter, number = _split_cell(cell)
 
-    if dimension == drive.ROWS_DIMENSION:
+    if dimension == drive.COLS_DIMENSION:
         number += 1
-    elif dimension == drive.COLS_DIMENSION:
+    elif dimension == drive.ROWS_DIMENSION:
         letter = chr(ord(letter) + 1)
     else:
         raise DPubError('Could not obtain next cell')

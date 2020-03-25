@@ -56,7 +56,7 @@ class Drive:
         ]
         self.write(doc, range, values)
 
-    def read(self, doc, range, dimension=ROWS_DIMENSION):
+    def read(self, doc, range, dimension=COLS_DIMENSION):
         '''Reads a range of data from a spreadsheet'''
         srv = self._service()
         r = srv.spreadsheets().values().get(spreadsheetId=doc, range=range).execute()
@@ -70,9 +70,8 @@ class Drive:
         
         return v_table[0]
 
-    def write(self, doc, range, values, dimension=COLS_DIMENSION):
+    def write(self, doc, range, values, dimension=ROWS_DIMENSION):
         '''Writes certain content to a range in a spreadsheet'''
-
         srv = self._service()
         body = {
             'range': range,
