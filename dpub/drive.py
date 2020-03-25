@@ -26,10 +26,14 @@ _SHEETS_SERVICE_VERSION = 'v4'
 # TRUE=1
 
 ROWS_DIMENSION = 'ROWS'
-COLS_DIMENTION = 'COLUMNS'
+COLS_DIMENSION = 'COLUMNS'
 
 
 class PublishToDriveError(Exception):
+    pass
+
+
+class ReadFromDriveError(Exception):
     pass
 
 
@@ -42,7 +46,7 @@ class Drive:
         '''Returns the first value of a provided range'''
         vals = self.read(doc, range)
         if vals is None or len(vals) == 0:
-            return []
+            return ''
         return vals[0]
 
     def write_one(self, doc, range, value):
@@ -55,21 +59,27 @@ class Drive:
     def read(self, doc, range, dimension=ROWS_DIMENSION):
         '''Reads a range of data from a spreadsheet'''
         srv = self._service()
-        r = srv.spreadsheet().values().get(spreadsheetId=doc, range=range)
-        vals = r.get('values', [])
-        if vals is None:
-            vals = []
-        return vals
+        r = srv.spreadsheets().values().get(spreadsheetId=doc, range=range).execute()
+        v_table = r.get('values', [])
+        
+        if v_table is None or len(v_table) == 0:
+            return []
+        
+        if len(v_table) > 1:
+            raise ReadFromDriveError('Mismatch size of the values table')
+        
+        return v_table[0]
 
-    def write(self, doc, range, values, dimension=COLS_DIMENTION):
+    def write(self, doc, range, values, dimension=COLS_DIMENSION):
         '''Writes certain content to a range in a spreadsheet'''
+
         srv = self._service()
         body = {
             'range': range,
             'majorDimension': dimension,
-            'values': values
+            'values': [values],
         }
-        srv.spreadsheet().values().update(spreadsheetId=doc, range=range,
+        srv.spreadsheets().values().update(spreadsheetId=doc, range=range,
                                           body=body, valueInputOption='RAW').execute()
 
     def _service(self):

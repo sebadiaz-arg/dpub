@@ -32,8 +32,14 @@ class Item:
 
 
 def parse_item(q):
-    '''Parses next queued lines until having a complete item'''
-    it = _parse_metadata(q)
+    '''Parses next queued lines until having a complete item
+    If not able to parse the headers, it returns None'''
+    # Return None if not found a first meta header
+    first_meta_header = _move_to_first_not_empty_line(q)
+    if not first_meta_header:
+        return None
+
+    it = _parse_metadata(q, first_meta_header)
     it.request = _parse_request(q)
     it.response = _parse_response(q)
     return it
@@ -46,9 +52,19 @@ def _read(q):
     return q.get()
 
 
-def _parse_metadata(q):
+def _move_to_first_not_empty_line(q):
+    '''Moves the cursor until reaching the first not empty 
+    line. In case of reaching the end, returns None'''
+    while True:
+        if q.empty():
+            return None
+        line = q.get()
+        if line.strip():
+            return line
+
+
+def _parse_metadata(q, line):
     '''Returns a parse item with the metadata populated'''
-    line = _read(q)
     it = Item()
     while not _is_end_of_meta_headers(line):
         if _is_profile_meta_header(line):
@@ -75,7 +91,7 @@ def _parse_message(q, end_mark_fn):
     d = ''
     line = _read(q)
     while not end_mark_fn(line):
-        d += '{}{}'.format(line, os.linesep)
+        d += line
         line = _read(q)
     return d
 

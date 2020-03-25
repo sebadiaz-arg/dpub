@@ -32,11 +32,11 @@ def _validate_cell_ref(cell_ref):
 
 # TODO READ AND WRITE DIMENSIONS ARE FIX NOW. Must be addressed later
 def run(read_dimension=drive.ROWS_DIMENSION,
-        write_dimension=drive.COLS_DIMENTION):
+        write_dimension=drive.COLS_DIMENSION):
     '''Do it'''
     args = cli.parse_args()
     doc = args.spreadsheet
-    first_test_id_range = args.traces_first_cell
+    first_test_id_range = args.tests_first_cell
     first_message_range = args.traces_first_cell
 
     d = drive.Drive(args.credentials, args.token)
@@ -57,6 +57,8 @@ def run(read_dimension=drive.ROWS_DIMENSION,
     # For every test, write the related traces
     for _, t in tests_map.items():
         m_range = t.first_message_range
+        # TODO TRACE
+        print('M_RANGE: {}'.format(m_range))
         for it in t.items:
             _write_trace(d, doc, it, m_range, write_dimension)
 
@@ -68,7 +70,8 @@ def _compose_items():
     q = pipe.to_queue()
     while not q.empty():
         it = parser.parse_item(q)
-        items.append(it)
+        if it:
+            items.append(it)
     return items
 
 
@@ -77,7 +80,7 @@ def _read_tests_map(drive,
                     first_test_id_range,
                     first_message_range,
                     read_dimension=drive.ROWS_DIMENSION,
-                    write_dimension=drive.COLS_DIMENTION):
+                    write_dimension=drive.COLS_DIMENSION):
     '''Reads the tests ids from the spreadsheet and composes a map
     whose keys are the test ids and the values the range where writting
     the first trace message'''
@@ -85,11 +88,11 @@ def _read_tests_map(drive,
     m_range = first_message_range
 
     t_sheet, t_cell = _split_range(t_range)
-    m_sheet, m_cell = _split_cell(m_range)
+    m_sheet, m_cell = _split_range(m_range)
 
     tests_map = {}
     while True:
-        id = drive.read_one(doc, first_test_id_range)
+        id = drive.read_one(doc, t_range)
         if id is None or id == '':
             break
         tests_map[id] = Test(id, m_range)
@@ -103,7 +106,7 @@ def _read_tests_map(drive,
     return tests_map
 
 
-def _write_trace(drive, doc, item, range, dimension=drive.COLS_DIMENTION):
+def _write_trace(drive, doc, item, range, dimension=drive.COLS_DIMENSION):
     '''Writes the trace to the indicated range, one message per cell'''
     # TODO COMPLETE the other cases. this first version writes in a
     # cell the request and the next column the response
@@ -123,7 +126,7 @@ def _next_cell(cell, dimension=drive.ROWS_DIMENSION):
 
     if dimension == drive.ROWS_DIMENSION:
         number += 1
-    elif dimension == drive.COLS_DIMENTION:
+    elif dimension == drive.COLS_DIMENSION:
         letter = chr(ord(letter) + 1)
     else:
         raise DPubError('Could not obtain next cell')
@@ -133,8 +136,14 @@ def _next_cell(cell, dimension=drive.ROWS_DIMENSION):
 
 def _split_cell(cell):
     '''Returns the cell in its letter an number'''
-    return re.split('(\\d+)', cell)
+    # Here we split the cell using the decimal part as separator
+    # Two first elements belong to column and row
+    tokens = re.split(r'(\d+)', cell)
+    if len(tokens) < 2:
+        raise DPubError('Could not parse cell {}'.format(cell))
 
+    return tokens[0], int(tokens[1])
+   
 
 def _join_cell(letter, number):
     '''Returns the letter and number joined in a cell'''

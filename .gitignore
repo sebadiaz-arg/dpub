@@ -8,3 +8,4 @@ venv
 htmlcov
 __pycache__
 dpub/__pycache__
+test/__pycache__

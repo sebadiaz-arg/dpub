@@ -70,9 +70,7 @@ Content-Length: 34
 Connection: keep-alive
 
 {
-        "product_id": "any-perk-id"
-}
-'''
+        "product_id": "any-perk-id"}'''
     assert it.response == '''HTTP/1.1 401 Unauthorized
 Content-Length: 54
 Content-Security-Policy: default-src https:
