@@ -54,16 +54,16 @@ def split_cell(cell):
     return tokens[0], int(tokens[1])
 
 
-def split_range(range):
-    '''Splits the range in sheet and internal range within the sheet'''
-    if range is None:
-        raise RefError('Range is None')
+def split_location(loc):
+    '''Splits the ref location in sheet and internal range within the sheet'''
+    if loc is None:
+        raise RefError('Reference location is None')
 
     # If not found the separator, asume that this is only a cell or internal range
-    if '!' not in range:
-        return None, range
+    if '!' not in loc:
+        return None, loc
 
-    return range.split('!', 1)
+    return loc.split('!', 1)
 
 
 def join_cell(letter, number):
@@ -71,12 +71,12 @@ def join_cell(letter, number):
     return _join(letter, number)
 
 
-def join_range(sheet, cell):
-    '''Joins a sheet with the cell'''
-    return _join(sheet, cell, '!')
+def join_location(sheet, range):
+    '''Joins a sheet with the cell or range'''
+    return _join(sheet, range, '!')
 
 
-def join_cells(first_cell, last_cell):
+def join_range(first_cell, last_cell):
     '''Joins a pair of cells to compose an internal range of cells'''
     return _join(first_cell, last_cell, ':')
 
@@ -85,15 +85,16 @@ def _join(a, b, separator=''):
     '''Joins two elements (cells, cell+sheet, etc..) to create a more complex:
     i.e.
     two cells to compose a cells range
-    a sheet with a cells range to compose an absolute range reference
+    a sheet with a cells range to compose a location reference
     '''
     return '{}{}{}'.format(a, separator, b)
 
 
-def complete_range(range, majorDimension=drive.ROWS_DIMENSION):
-    '''Completes a range enlarging it to cover all the rest of cells until
+def extend_cell_location_to_range(loc, majorDimension=drive.ROWS_DIMENSION):
+    '''Completes a cell location enlarging it to cover all the rest of cells until
     reaching the end of the row or the column'''
-    sheet, cell = split_range(range)
+    # XXX asuming here that parameter is indeed a location cell and not a range
+    sheet, cell = split_location(loc)
     letter, number = split_cell(cell)
 
     if majorDimension == drive.COLS_DIMENSION:
@@ -103,4 +104,4 @@ def complete_range(range, majorDimension=drive.ROWS_DIMENSION):
     else:
         raise RefError('Wrong dimension when completing a range')
 
-    return join_range(sheet, '{}:{}'.format(cell, last_cell))
+    return join_location(sheet, '{}:{}'.format(cell, last_cell))

@@ -7,7 +7,7 @@ import re
 
 from dpub import drive, parser, pipe, cli
 
-from dpub.ref import split_range, complete_range, join_range, next_cell
+from dpub.ref import split_location, extend_cell_location_to_range, join_location, next_cell
 
 
 class DPubError(Exception):
@@ -38,13 +38,13 @@ def run(read_dimension=drive.COLS_DIMENSION,
     '''Do it'''
     args = cli.parse_args()
     doc = args.spreadsheet
-    first_test_id_range = args.tests_first_cell
-    first_message_range = args.traces_first_cell
+    first_test_location = args.first_test_location
+    first_msg_location = args.first_msg_location
 
     d = drive.Drive(args.credentials, args.token)
     items = _compose_items()
     tests_map = _read_tests_map(
-        d, doc, first_test_id_range, first_message_range, read_dimension, write_dimension)
+        d, doc, first_test_location, first_msg_location, read_dimension, write_dimension)
 
     # Append the items to the tests. If having one profile there will be one
     # trace per profile, but having several, there will be several items
@@ -83,28 +83,28 @@ def _compose_items():
 
 def _read_tests_map(drive,
                     doc,
-                    first_test_id_range,
-                    first_message_range,
+                    first_test_location,
+                    first_msg_location,
                     read_dimension=drive.COLS_DIMENSION,
                     write_dimension=drive.ROWS_DIMENSION):
     '''Reads the tests ids from the spreadsheet and composes a map
     whose keys are the test ids and the values the range where writting
     the first trace message'''
-    m_range = first_message_range
-    m_sheet, m_cell = split_range(m_range)
+    m_loc = first_msg_location
+    m_sheet, m_cell = split_location(m_loc)
 
-    t_fullrange = complete_range(
-        first_test_id_range, majorDimension=read_dimension)
-    ids = drive.read(doc, t_fullrange, read_dimension)
+    t_range = extend_cell_location_to_range(
+        first_test_location, majorDimension=read_dimension)
+    ids = drive.read(doc, t_range, read_dimension)
 
     tests_map = {}
     for id in ids:
         if id is None or id == '':
             break
-        tests_map[id] = Test(id, m_range)
+        tests_map[id] = Test(id, m_loc)
 
         m_cell = next_cell(m_cell, read_dimension)
-        m_range = join_range(m_sheet, m_cell)
+        m_loc = join_location(m_sheet, m_cell)
 
     return tests_map
 
