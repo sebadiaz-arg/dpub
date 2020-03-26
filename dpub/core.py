@@ -60,8 +60,12 @@ def run(read_dimension=drive.COLS_DIMENSION,
     # For every test, write the related traces
     for _, t in tests_map.items():
         m_range = t.first_message_range
+        # Compose the traces or a single test in a single array and print it all at a once
+        values = []
         for it in t.items:
-            _write_trace(d, doc, it, m_range, write_dimension)
+            values.append(it.request)
+            values.append(it.response)
+        _write_trace(d, doc, values, m_range, write_dimension)
 
 
 def _compose_items():
@@ -106,14 +110,10 @@ def _read_tests_map(drive,
     return tests_map
 
 
-def _write_trace(drive, doc, item, range, dimension=drive.ROWS_DIMENSION):
+def _write_trace(drive, doc, values, range, dimension=drive.ROWS_DIMENSION):
     '''Writes the trace to the indicated range, one message per cell'''
     # TODO COMPLETE the other cases. this first version writes in a
     # cell the request and the next column the response
-    values = [
-        item.request,
-        item.response,
-    ]
     drive.write(doc, range, values, dimension)
 
 
