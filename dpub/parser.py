@@ -154,7 +154,19 @@ def _split_test_signature(signature):
     # Use '1' as second parameter to indicate that we only desire one split.
     # This ensures that no more splits are done if separator is found more
     # than once
-    return signature.split(_TEST_SIGNATURE_SEP, 1)
+    tokens = signature.split(_TEST_SIGNATURE_SEP, 1)
+    if not tokens:
+        raise ParseError(
+            'Could not split test signature: {}'.format(signature))
+
+    if len(tokens) > 2:
+        raise ParseError(
+            'Could not split test signature: {}'.format(signature))
+
+    if len(tokens) == 1:
+        return signature, signature
+
+    return tokens
 
 
 def _is_test_meta_header(line):
