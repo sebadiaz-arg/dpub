@@ -7,6 +7,9 @@ import re
 
 from dpub import drive, parser, pipe, cli
 
+_LAST_ROW = '1001'
+_LAST_COLUMN = 'AC'
+
 
 class DPubError(Exception):
     pass
@@ -68,6 +71,8 @@ def _compose_items():
     q = pipe.to_queue()
     while not q.empty():
         it = parser.parse_item(q)
+        # Skip null items, as they are related with completion
+        # lines at the end not belonging to any test
         if it:
             items.append(it)
     return items
@@ -82,24 +87,21 @@ def _read_tests_map(drive,
     '''Reads the tests ids from the spreadsheet and composes a map
     whose keys are the test ids and the values the range where writting
     the first trace message'''
-    t_range = first_test_id_range
     m_range = first_message_range
-
-    t_sheet, t_cell = _split_range(t_range)
     m_sheet, m_cell = _split_range(m_range)
 
+    t_fullrange = _complete_range(
+        first_test_id_range, majorDimension=read_dimension)
+    ids = drive.read(doc, t_fullrange, read_dimension)
+
     tests_map = {}
-    while True:
-        id = drive.read_one(doc, t_range)
+    for id in ids:
         if id is None or id == '':
             break
         tests_map[id] = Test(id, m_range)
 
         m_cell = _next_cell(m_cell, read_dimension)
         m_range = _join_range(m_sheet, m_cell)
-
-        t_cell = _next_cell(t_cell, read_dimension)
-        t_range = _join_range(t_sheet, t_cell)
 
     return tests_map
 
@@ -115,19 +117,27 @@ def _write_trace(drive, doc, item, range, dimension=drive.ROWS_DIMENSION):
     drive.write(doc, range, values, dimension)
 
 
-def _next_cell(cell, dimension=drive.ROWS_DIMENSION):
+def _next_cell(cell, majorDimension=drive.ROWS_DIMENSION):
     '''Calculate next cell to read, considering that cell value
     does not include the sheet part'''
     if cell is None:
         raise DPubError('Cell to fetch spreadsheet info is None')
     letter, number = _split_cell(cell)
 
-    if dimension == drive.COLS_DIMENSION:
+    if majorDimension == drive.COLS_DIMENSION:
         number += 1
-    elif dimension == drive.ROWS_DIMENSION:
-        letter = chr(ord(letter) + 1)
+    elif majorDimension == drive.ROWS_DIMENSION:
+        if len(letter) == 1:
+            letter = chr(ord(letter) + 1)
+        elif len(letter == 2):
+            # Consider here the last columns AA AB and AC and increase only last char
+            c = letter[len(letter) - 1]
+            c = chr(ord(c) + 1)
+            letter = '{}{}'.format(letter[0], c)
+        else:
+            raise DPubError('Invalid column on cell {}'.format(cell))
     else:
-        raise DPubError('Could not obtain next cell')
+        raise DPubError('Could not obtain next cell for {}'.format(cell))
 
     return _join_cell(letter, number)
 
@@ -141,11 +151,11 @@ def _split_cell(cell):
         raise DPubError('Could not parse cell {}'.format(cell))
 
     return tokens[0], int(tokens[1])
-   
+
 
 def _join_cell(letter, number):
     '''Returns the letter and number joined in a cell'''
-    return '{}{}'.format(letter, number)
+    return _join(letter, number)
 
 
 def _split_range(range):
@@ -162,4 +172,34 @@ def _split_range(range):
 
 def _join_range(sheet, cell):
     '''Joins a sheet with the cell'''
-    return '{}!{}'.format(sheet, cell)
+    return _join(sheet, cell, '!')
+
+
+def _join_cells(first_cell, last_cell):
+    '''Joins a pair of cells to compose an internal range of cells'''
+    return _join(first_cell, last_cell, ':')
+
+
+def _join(a, b, separator=''):
+    '''Joins two elements (cells, cell+sheet, etc..) to create a more complex:
+    i.e.
+    two cells to compose a cells range
+    a sheet with a cells range to compose an absolute range reference
+    '''
+    return '{}{}{}'.format(a, separator, b)
+
+
+def _complete_range(range, majorDimension=drive.ROWS_DIMENSION):
+    '''Completes a range enlarging it to cover all the rest of cells until
+    reaching the end of the row or the column'''
+    sheet, cell = _split_range(range)
+    letter, number = _split_cell(cell)
+
+    if majorDimension == drive.COLS_DIMENSION:
+        last_cell = _join_cell(letter, _LAST_ROW)
+    elif majorDimension == drive.ROWS_DIMENSION:
+        last_cell = _join_cell(_LAST_COLUMN, number)
+    else:
+        raise DPubError('Wrong dimension when completing a range')
+
+    return _join_range(sheet, '{}:{}'.format(cell, last_cell))
