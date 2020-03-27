@@ -51,7 +51,22 @@ def split_cell(cell):
     if len(tokens) < 2:
         raise RefError('Could not parse cell {}'.format(cell))
 
-    return tokens[0], int(tokens[1])
+    letter = tokens[0]
+    number = int(tokens[1])
+
+    if not letter:
+        raise RefError('Could not find the column')
+
+    if number <= 0:
+        raise RefError('Could not find the row')
+
+    if letter > _LAST_COLUMN:
+        raise RefError('Max allowed column is {}'.format(_LAST_COLUMN))
+
+    if number > int(_LAST_ROW):
+        raise RefError('Max allowd row is {}'.format(_LAST_ROW))
+
+    return letter, number
 
 
 def split_location(loc):

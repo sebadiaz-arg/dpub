@@ -6,7 +6,16 @@
 from dpub import parser
 from queue import Queue
 
-trace = '''
+
+def _compose_queue(test_data):
+    q = Queue()
+    for t in test_data.splitlines():
+        q.put(t)
+    return q
+
+
+def test_parse_traces():
+    test_data = '''
 
 Profile: +447521168738
 Test: 01-01 - Request User Profile
@@ -42,13 +51,8 @@ Content-Type: text/plain; charset=utf-8
 {"code": "UNAUTHENTICATED", "message":"token expired"}
 *******************************************************
 '''
-
-
-def test_parse_traces():
     # Enqueue the trace lines
-    q = Queue()
-    for line in trace.splitlines():
-        q.put(line)
+    q = _compose_queue(test_data)
 
     # Process
     it = parser.parse_item(q)
@@ -115,3 +119,37 @@ X-Xss-Protection: 1; mode=block\
 Content-Type: text/plain; charset=utf-8\
 \
 {"code": "UNAUTHENTICATED", "message":"token expired"}'
+
+
+def test_parse_traces_return_no_item():
+    test_data = '''
+
+    '''
+    # Enqueue the trace lines
+    q = _compose_queue(test_data)
+
+    # Process
+    it = parser.parse_item(q)
+
+    # Validate
+    assert it is None
+
+
+def test_parse_traces_with_empty_meta_header():
+    test_data = '''
+Profile:
+Test: 01-01 - Request User Profile
+================================================================
+
+----------------------------------------------------------------
+
+*******************************************************
+'''
+    # Enqueue the test data
+    q = _compose_queue(test_data)
+
+    # Process
+    it = parser.parse_item(q)
+    
+    # Validate
+    assert not it.profile
