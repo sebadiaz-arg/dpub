@@ -38,16 +38,19 @@ This tools is thought to work along with [newman-reporter-msgs](https://github.c
 
 You have to launch newman with the collection, environment and any other stuff that
 you wish to test. Then you can tube the std out to this script and provide
-a *Drive Sheet ID* and a *Cell* within certain spreadsheet
+a *Drive Sheet ID*, a *Cell* in certain spreadsheet where valid test identifiers are
+and another *Cell* in that same spreadsheet (could be even in another sheet) to write
+the traces starting at that position
 
 here's an example:
 ```sh
-newman run -e environment.json collection.json -r msgs | ./dpub.py 1o8wahJ8qTIlHgAMQIMhxFq9bBmfIrlFvoEhkAJ3APFg 'TEST!A1'
+newman run -e environment.json collection.json -r msgs | ./dpub.sh 1o8wahJ8qTIlHgAMQIMhxFq9bBmfIrlFvoEhkAJ3APFg 'TEST!A1' 'TEST!C1'
 ```
+
+This example reads in _TEST_ sheet, starting in _A1_ cell and moving in rows, all the test identifiers.
+Traces will be printed starting in _C1_ cell. All traces belonging to the same test but different
+profiles will be written in the next columns, in the same row. Different tests traces will be 
+written by moving vertically to the next tests.
 
 > NOTE: You have to provide the cells range between single quotes for command not to fail.
 > Otherwise the character ! will take some meaning out of the literal one.
-
-
-## Hack
-It is recommended

@@ -1,2 +1,10 @@
 token.pickle
 drive-credentials.json
+.vscode
+venv
+.tox
+*.egg-info
+.coverage
+htmlcov
+__pycache__
+*/__pycache__
