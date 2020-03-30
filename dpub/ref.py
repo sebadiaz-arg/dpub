@@ -8,7 +8,7 @@ import re
 from dpub import drive
 
 _LAST_ROW = '1001'
-_LAST_COLUMN = 'AC'
+_LAST_COLUMN = 'Z'
 
 
 class RefError(Exception):
