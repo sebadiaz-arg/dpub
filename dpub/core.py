@@ -5,9 +5,9 @@
 
 import re
 
-from dpub import drive, parser, pipe, cli
-
-from dpub.ref import split_location, extend_cell_location_to_range, join_location, next_cell
+from dpub import cli, drive, output, parser, pipe
+from dpub.ref import (extend_cell_location_to_range, join_location, next_cell,
+                      split_location)
 
 
 class DPubError(Exception):
@@ -40,6 +40,7 @@ def run(read_dimension=drive.COLS_DIMENSION,
     doc = args.spreadsheet
     first_test_location = args.first_test_location
     first_msg_location = args.first_msg_location
+    mode = args.mode
 
     d = drive.Drive(args.credentials, args.token)
     items = _compose_items()
@@ -59,11 +60,7 @@ def run(read_dimension=drive.COLS_DIMENSION,
     # For every test, write the related traces
     for _, t in tests_map.items():
         m_range = t.first_message_range
-        # Compose the traces or a single test in a single array and print it all at a once
-        values = []
-        for it in t.items:
-            values.append(it.request)
-            values.append(it.response)
+        values = output.compose(t, mode)
         _write_messages(d, doc, values, m_range, write_dimension)
 
 

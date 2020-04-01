@@ -28,7 +28,8 @@ def next_cell(cell, majorDimension=drive.ROWS_DIMENSION):
         if len(letter) == 1:
             letter = chr(ord(letter) + 1)
         elif len(letter == 2):
-            # Consider here the last columns AA AB and AC and increase only last char
+            # Consider increasing only last char
+            # FIXME Extend this to cover all lenghts of letters
             c = letter[len(letter) - 1]
             c = chr(ord(c) + 1)
             letter = '{}{}'.format(letter[0], c)
@@ -59,12 +60,6 @@ def split_cell(cell):
 
     if number <= 0:
         raise RefError('Could not find the row')
-
-    if letter > _LAST_COLUMN:
-        raise RefError('Max allowed column is {}'.format(_LAST_COLUMN))
-
-    if number > int(_LAST_ROW):
-        raise RefError('Max allowd row is {}'.format(_LAST_ROW))
 
     return letter, number
 

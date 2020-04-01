@@ -10,8 +10,10 @@ import pytest
 def test_split_cell_ok():
     test_data = [
         ['A3', 'A', 3],
-        ['AA3', 'AA', 3],
-        ['AC3', 'AC', 3],
+        ['F9', 'F', 9],
+        ['C1', 'C', 1],
+        ['AD3', 'AD', 3],
+        ['A3090', 'A', 3090]
     ]
 
     for d in test_data:
@@ -21,8 +23,8 @@ def test_split_cell_ok():
 
 
 def test_split_cell_fails():
-    test_data = ['AD3', '3', 'AA', 'A3090', '']
-    
+    test_data = ['3', 'AA', '', 'F0']
+
     for d in test_data:
         with pytest.raises(RefError):
             split_cell(d)

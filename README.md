@@ -25,11 +25,22 @@ pip install -r requirements.txt
 
 You are now good to go
 
+## Run the tool
+
+There is a *run.sh* launcher to execute the tool. It takes these parameters:
+
+| parameter | description | mandatory | example |
+|-----------|-------------|-----------|---------|
+| doc | identifier of the spreadsheet where publishing | yes | 1o8wahJ8qTIlHgAMQIMhxFq9bBmfIrlFvoEhkAJ3APFg |
+| first test cell | cell where first test identifier is located | yes | TEST!A2 |
+| first msg cell | cell where writting the results of the first test | yes | TEST!C2 |
+| -m --mode | how to write into the spreadsheet. 'message' writes a message per cell; 'profile' writes every profile trace in a cell; 'test' writes every test in a single cell | no | -m all |
+
 ## Execution example
 
 Provide any content and tube it to the script:
 ```sh
-echo "LEÑE" | ./dpub.py 1o8wahJ8qTIlHgAMQIMhxFq9bBmfIrlFvoEhkAJ3APFg 'TEST!A1'
+echo "whatever trace" | ./dpub.sh 1o8wahJ8qTIlHgAMQIMhxFq9bBmfIrlFvoEhkAJ3APFg 'TEST!A1' 'TEST!C1'
 ```
 
 ### Execution along with newman-reporter-msgs
