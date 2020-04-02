@@ -5,7 +5,7 @@
 
 import re
 
-from dpub import drive, utils
+from dpub import drive
 
 _LAST_ROW = '1001'
 _LAST_COLUMN = 'Z'
@@ -25,11 +25,51 @@ def next_cell(cell, majorDimension=drive.ROWS_DIMENSION):
     if majorDimension == drive.COLS_DIMENSION:
         number += 1
     elif majorDimension == drive.ROWS_DIMENSION:
-        letter = utils.next_col(letter)
+        letter = next_col(letter)
     else:
         raise RefError('Could not obtain next cell for {}'.format(cell))
 
     return join_cell(letter, number)
+
+
+def next_col(col):
+    '''Increases a column in one unit. If the column
+    has more than one letters, increses the less weight one.
+    If that one is at Z, it will come to A an the next
+    weight will be increased.
+
+    i.e.
+
+    A -> B
+    AA -> AB
+    AZ -> BA
+    ZZ -> AAA
+    '''
+    if col is None:
+        return 'A'
+
+    res = []
+    carry = True
+
+    for letter in reversed(col):
+        if carry:
+            if letter.upper() == 'Z':
+                next_letter = 'A'
+                carry = True
+            else:
+                next_letter = chr(ord(letter) + 1)
+                carry = False
+        else:
+            next_letter = letter
+        res.insert(0, next_letter)
+
+    # In case that carry is still true, we need to
+    # prepend a final 'A' letter because we have increased
+    # the end of the ZZZ...Z columns and a new letter is needed
+    if carry:
+        res.insert(0, 'A')
+
+    return ''.join(res)
 
 
 def split_cell(cell):
