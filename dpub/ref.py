@@ -5,7 +5,7 @@
 
 import re
 
-from dpub import drive
+from dpub import drive, utils
 
 _LAST_ROW = '1001'
 _LAST_COLUMN = 'Z'
@@ -25,16 +25,7 @@ def next_cell(cell, majorDimension=drive.ROWS_DIMENSION):
     if majorDimension == drive.COLS_DIMENSION:
         number += 1
     elif majorDimension == drive.ROWS_DIMENSION:
-        if len(letter) == 1:
-            letter = chr(ord(letter) + 1)
-        elif len(letter == 2):
-            # Consider increasing only last char
-            # FIXME Extend this to cover all lenghts of letters
-            c = letter[len(letter) - 1]
-            c = chr(ord(c) + 1)
-            letter = '{}{}'.format(letter[0], c)
-        else:
-            raise RefError('Invalid column on cell {}'.format(cell))
+        letter = utils.next_col(letter)
     else:
         raise RefError('Could not obtain next cell for {}'.format(cell))
 
