@@ -74,17 +74,22 @@ class Drive:
 def _reduce_dimension(table):
     '''Reduces the second dimension of a table if not needed.
     i.e.
-    [['a'], ['b'], ['c']] is reduced to ['a', 'b', 'c']
+    [['a'], ['b'], [], ['c']] is reduced to ['a', 'b', '', 'c']
+
+    if any of the second dimension is greater than 1, the table is not reduced
     '''
     if table is None:
         return []
 
     t = []
     for c in table:
-        if len(c) == 1:
+        if len(c) == 0:
+            t.append('')
+        elif len(c) == 1:
             t.append(c[0])
         else:
-            t.append(c)
+            # If found more than one dimension at any moment, return the original table
+            return table
     return t
 
 

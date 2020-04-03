@@ -96,14 +96,27 @@ def _read_tests_map(drive,
 
     tests_map = {}
     for id in ids:
-        if id is None or id == '':
-            break
-        tests_map[id] = Test(id, m_loc)
+        # Create a test object only if the read test identifier is not empty.
+        # Otherwise we are reading an empty row.
+        if id and len(id) > 0:
+            # Read at m_loc. If m_loc content is not empty at the sheet, skip the
+            # test. Only destination empty cells will be written
+            if _is_location_empty(drive, doc, m_loc):
+                tests_map[id] = Test(id, m_loc)
 
+        # Even for empty rows, increase the cell where writting the output, to
+        # Align it with the tests
         m_cell = next_cell(m_cell, read_dimension)
         m_loc = join_location(m_sheet, m_cell)
 
     return tests_map
+
+
+def _is_location_empty(drive, doc, loc):
+    '''Returns true if at least the content of the
+    first cell of the received location is empty.'''
+    dst = drive.read_one(doc, loc)
+    return len(dst) == 0
 
 
 def _write_messages(drive, doc, values, range, dimension=drive.ROWS_DIMENSION):
