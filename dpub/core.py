@@ -81,12 +81,16 @@ def run(read_dimension=drive.COLS_DIMENSION,
         elif t.update == "No":
             continue
         elif t.update == "New":
+            # TODO: this small part would be moved to a function.
+            # It calculates the letter of the previous column of the requests: the id column letter.
+            # Then, for new cases we can write the test case id as well.
             m_range = t.first_message_range
             values = output.compose(t, mode)
-            m_range_sheet, mrange_cell = split_location(m_range)
-            letter, number = split_cell(mrange_cell)
+            m_range_sheet, m_range_cell = split_location(m_range)
+            letter, number = split_cell(m_range_cell)
             prev_letter = chr(ord(letter) - 1)
-            m_range = join_cell(prev_letter, number)
+            m_range_cell = join_cell(prev_letter, number)
+            m_range = join_location(m_range_sheet, m_range_cell)
             _write_messages(d, doc, values, m_range, write_dimension)
         else:
             raise DPubError(
