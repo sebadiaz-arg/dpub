@@ -121,7 +121,6 @@ def split_location(loc):
     # If not found the separator, asume that this is only a cell or internal range
     if '!' not in loc:
         return None, loc
-    print("location opened: ", loc.split('!', 1))
     return loc.split('!', 1)
 
 

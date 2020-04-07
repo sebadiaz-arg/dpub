@@ -63,36 +63,29 @@ def run(read_dimension=drive.COLS_DIMENSION,
     for it in items:
         if not it.test_id in tests_map:
             # TODO SEE WHAT TO DO HERE WITH THE ERROR MESSAGE
-            print("Test id no esta en test_maps: ", it.test_id)
             tests_map_len = int(len(tests_map))
-            # It calculate in which row position write a new test case
+            # It calculates in which row position write a new test case
             new_item_row = tests_map_len + empty_ids
-            print("Largo de tests_map: ", tests_map_len)
             tests_map = _append_tests(
                 tests_map, it.test_id, new_item_row, first_msg_location, read_dimension)
 
-        print("Pasé por aca 2")
         t = tests_map[it.test_id]
         t.append(it)
 
 # For every test, write the related traces
     for _, t in tests_map.items():
         if t.update == "Yes":
-            print("Update is Yes en: ", t.id)
             m_range = t.first_message_range
             values = output.compose(t, mode)
             _write_messages(d, doc, values, m_range, write_dimension)
         elif t.update == "No":
-            print("Update is No en: ", t.id)
+            continue
         elif t.update == "New":
-            print("Update is New en: ", t.id)
             m_range = t.first_message_range
             values = output.compose(t, mode)
             m_range_sheet, mrange_cell = split_location(m_range)
             letter, number = split_cell(mrange_cell)
-            print("Letter: ", letter)
             prev_letter = chr(ord(letter) - 1)
-            print("Letter: ", prev_letter)
             m_range = join_cell(prev_letter, number)
             _write_messages(d, doc, values, m_range, write_dimension)
         else:
@@ -123,7 +116,6 @@ def _read_tests_map(drive,
     '''Reads the tests ids from the spreadsheet and composes a map
     whose keys are the test ids and the values the range where writting
     the first trace message'''
-    print("Leyendo sheet")
     m_loc = first_msg_location
     m_sheet, m_cell = split_location(m_loc)
 
@@ -133,7 +125,6 @@ def _read_tests_map(drive,
 
     tests_map = {}
     empty_ids = 0
-    print("Largo 1 de tests_map: ", len(tests_map))
     for id in ids:
         # Create a test object only if the read test identifier is not empty.
         # Otherwise we are reading an empty row.
@@ -153,8 +144,6 @@ def _read_tests_map(drive,
         # align it with the tests
         m_cell = next_cell(m_cell, read_dimension)
         m_loc = join_location(m_sheet, m_cell)
-    # print("Largo de test_maps POSTA:", len(tests_map))
-    print("Largo 2 de tests_map: ", len(tests_map))
     return tests_map, empty_ids
 
 
