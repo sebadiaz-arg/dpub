@@ -52,14 +52,12 @@ class Drive:
     def read(self, doc, range, dimension=COLS_DIMENSION):
         '''Reads a range of data from a spreadsheet'''
         srv = self._service()
-        print("range", range)
         r = srv.spreadsheets().values().get(spreadsheetId=doc, range=range).execute()
         v_table = r.get('values', [])
         return _reduce_dimension(v_table)
 
     def write(self, doc, range, values, dimension=ROWS_DIMENSION):
         '''Writes certain content to a range in a spreadsheet'''
-        print("wrange", range)
         srv = self._service()
         body = {
             'range': range,
