@@ -26,14 +26,19 @@ def compose(test, mode, max=_CELL_MAX_CHARS):
     if mode == 'message':
         # Every message is an element in the values array
         for it in test.items:
+            if test.update == "New":
+                _append(values, test.id, max)
             _append(values, it.request, max)
             _append(values, it.response, max)
     elif mode == 'profile':
         # Every profile trace is a value in the values array
         for it in test.items:
+            if test.update == "New":
+                _append(values, test.id, max)
             _append(values, _compose_profile_trace(it), max)
     elif mode == 'test':
         # All traces are a single value in the values array
+        # TODO: for this mode, the new test ids are not included yet
         s = ''
         for it in test.items:
             s += '{}{}'.format(_compose_profile_trace(it),

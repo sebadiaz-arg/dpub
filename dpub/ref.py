@@ -32,6 +32,24 @@ def next_cell(cell, majorDimension=drive.ROWS_DIMENSION):
     return join_cell(letter, number)
 
 
+def cell_for_new_test(cell, tests_map_len, majorDimension=drive.ROWS_DIMENSION):
+    '''Calculate last cell where it should write a new test case in the sheet, considering that cell value
+    does not include the sheet part.'''
+
+    if cell is None:
+        raise RefError('Cell to fetch spreadsheet info is None')
+    letter, number = split_cell(cell)
+
+    if majorDimension == drive.COLS_DIMENSION:
+        number += tests_map_len
+    elif majorDimension == drive.ROWS_DIMENSION:
+        letter = next_col(letter)
+    else:
+        raise RefError('Could not obtain next cell for {}'.format(cell))
+
+    return join_cell(letter, number)
+
+
 def next_col(col):
     '''Increases a column in one unit. If the column
     has more than one letters, increses the less weight one.
@@ -103,7 +121,7 @@ def split_location(loc):
     # If not found the separator, asume that this is only a cell or internal range
     if '!' not in loc:
         return None, loc
-
+    print("location opened: ", loc.split('!', 1))
     return loc.split('!', 1)
 
 
