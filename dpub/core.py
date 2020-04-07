@@ -8,6 +8,7 @@ import re
 from dpub import cli, drive, output, parser, pipe
 from dpub.ref import (extend_cell_location_to_range, join_location, next_cell,
                       split_location)
+from dpub.spinner import Spinner
 
 
 class DPubError(Exception):
@@ -36,16 +37,22 @@ def _validate_cell_ref(cell_ref):
 def run(read_dimension=drive.COLS_DIMENSION,
         write_dimension=drive.ROWS_DIMENSION):
     '''Do it'''
+    spinner = Spinner()
+    spinner.write('Reading from stdin ... ')
+
     args = cli.parse_args()
     doc = args.spreadsheet
     first_test_location = args.first_test_location
     first_msg_location = args.first_msg_location
     mode = args.mode
 
+    spinner.write('Setup Google Drive access ... ')
     d = drive.Drive(args.credentials, args.token)
+
+    spinner.write('Reading existing tests ... ')
     items = _compose_items()
     tests_map = _read_tests_map(
-        d, doc, first_test_location, first_msg_location, read_dimension, write_dimension)
+        d, doc, first_test_location, first_msg_location, spinner, read_dimension, write_dimension)
 
     # Append the items to the tests. If having one profile there will be one
     # trace per profile, but having several, there will be several items
@@ -58,10 +65,15 @@ def run(read_dimension=drive.COLS_DIMENSION,
         t.append(it)
 
     # For every test, write the related traces
+    spinner.write('Writting results to spreadsheet ... ')
     for _, t in tests_map.items():
+        spinner.write('Writting test {} ... '.format(t.id))
         m_range = t.first_message_range
         values = output.compose(t, mode)
         _write_messages(d, doc, values, m_range, write_dimension)
+
+    spinner.write('Done.')
+    spinner.end()
 
 
 def _compose_items():
@@ -82,6 +94,7 @@ def _read_tests_map(drive,
                     doc,
                     first_test_location,
                     first_msg_location,
+                    spinner,
                     read_dimension=drive.COLS_DIMENSION,
                     write_dimension=drive.ROWS_DIMENSION):
     '''Reads the tests ids from the spreadsheet and composes a map
@@ -102,6 +115,7 @@ def _read_tests_map(drive,
             # Read at m_loc. If m_loc content is not empty at the sheet, skip the
             # test. Only destination empty cells will be written
             if _is_location_empty(drive, doc, m_loc):
+                spinner.write('Reading test {} ... '.format(id))
                 tests_map[id] = Test(id, m_loc)
 
         # Even for empty rows, increase the cell where writting the output, to
