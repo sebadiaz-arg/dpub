@@ -26,7 +26,7 @@ def compose(test, mode, max=_CELL_MAX_CHARS):
     if mode == 'message':
         # Every message is an element in the values array
         for it in test.items:
-            if test.update == "New":
+            if (test.update == "New") and test.id:
                 _append(values, test.id, max)
             _append(values, it.request, max)
             _append(values, it.response, max)
