@@ -146,3 +146,10 @@ def extend_cell_location_to_range(loc, majorDimension=drive.ROWS_DIMENSION):
         raise RefError('Wrong dimension when completing a range')
 
     return join_location(sheet, '{}:{}'.format(cell, last_cell))
+
+
+def next_row_range(loc):
+    '''Increments the range in one row position'''
+    sheet, cell = split_location(loc)
+    next_cell = next_cell(cell, drive.COLS_DIMENSION)
+    return join_location(sheet, cell)
