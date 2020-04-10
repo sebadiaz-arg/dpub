@@ -7,7 +7,7 @@ import re
 
 from dpub import cli, drive, output, parser, pipe
 from dpub.ref import (extend_cell_location_to_range, join_location, next_cell,
-                      split_location, next_row_range)
+                      split_location, next_cell_range, prev_cell_range)
 from dpub.spinner import Spinner
 
 
@@ -51,57 +51,43 @@ def run(read_dimension=drive.COLS_DIMENSION,
 
     spinner.write('Reading existing tests ... ')
     items = _compose_items()
-    tests_map = _read_tests_map(
+    last_item_range = ''
+    tests_map, last_item_range, ids_not_allowed = _read_tests_map(
         d, doc, first_test_location, first_msg_location, spinner, read_dimension, write_dimension)
 
-    # Part I: Append the items to the tests. If having one profile there will be one
+    ids_to_append = []
+    # Append the items to the tests. If having one profile there will be one
     # trace per profile, but having several, there will be several items
     for it in items:
-        if not it.test_id in tests_map:
-            # TODO SEE WHAT TO DO HERE WITH THE ERROR MESSAGE
+        # For existent test_ids that should't be overwritten
+        if it.test_id in ids_not_allowed:
             continue
+        # For new test_ids that should be appended at the end of the sheet
+        if not it.test_id in tests_map:
+            # Here we manage any empty test_id.
+            if it.test_id == None:
+                it.test_id = "(unknown)"
+            # TODO SEE WHAT TO DO HERE WITH THE ERROR MESSAGE
+            tests_map[it.test_id] = Test(it.test_id, last_item_range)
+            last_item_range = next_cell_range(last_item_range)
+            ids_to_append.append(it.test_id)
+            #t = tests_map[it.test_id]
+            #t.first_message_range = ''
+        # For existent test_ids with empty data, to be completed
         t = tests_map[it.test_id]
         t.append(it)
-        last_item_id = it.test_id
-        last_item_first_msg_range = it.first_message_range
-    # 'it' has the last item of items, then we'll use later.
 
     # For every test, write the related traces
-    spinner.write('Writing results 1/2 to spreadsheet ... ')
+    spinner.write('Writting results to spreadsheet ... ')
     for _, t in tests_map.items():
-        spinner.write('Writing test {} ... '.format(t.id))
+        spinner.write('Writting test {} ... '.format(t.id))
         m_range = t.first_message_range
-        values = output.compose(t, mode)
-        _write_messages(d, doc, values, m_range, write_dimension)
-
-    after_last_item = False
-    # Part II: Append the NEW items to the tests. If having one profile there will be one
-    # trace per profile, but having several, there will be several items
-    for it in items:
-        if it.test_id == last_item_id:
-            after_last_item = True
-            last_item_row = last_item_first_msg_range
-            new_test_range = next_row_range(last_item_row)
-            # We're in the last item, then we continue to next one
-            continue
-        if not it.test_id in tests_map and after_last_item:
-            id = it.test_id
-            m_loc = new_test_range
-            tests_map[id] = Test(id, m_loc)
-            t = tests_map[id]
-            t.append(it)
-
-    # For every test, write the related traces
-    after_last_item = False
-    spinner.write('Writing results 2/2 to spreadsheet ... ')
-    for _, t in tests_map.items():
-        if it.id == last_item_id:
-            after_last_item = True
-            continue
-        if after_last_item:
-            spinner.write('Writing new test {} ... '.format(t.id))
-            m_range = t.first_message_range
+        if t.id in ids_to_append:
             values = output.compose_new_tests(t, mode)
+            m_range = prev_cell_range(m_range, drive.ROWS_DIMENSION)
+            _write_messages(d, doc, values, m_range, write_dimension)
+        else:
+            values = output.compose(t, mode)
             _write_messages(d, doc, values, m_range, write_dimension)
 
     spinner.write('Done.')
@@ -139,7 +125,10 @@ def _read_tests_map(drive,
         first_test_location, majorDimension=read_dimension)
     ids = drive.read(doc, t_range, read_dimension)
 
+    # It's m_loc when the spreadsheet is empty.
+    last_item_range = m_loc
     tests_map = {}
+    ids_not_allowed = []
     for id in ids:
         # Create a test object only if the read test identifier is not empty.
         # Otherwise we are reading an empty row.
@@ -149,13 +138,16 @@ def _read_tests_map(drive,
             if _is_location_empty(drive, doc, m_loc):
                 spinner.write('Reading test {} ... '.format(id))
                 tests_map[id] = Test(id, m_loc)
+            else:
+                ids_not_allowed.append(id)
 
         # Even for empty rows, increase the cell where writting the output, to
         # Align it with the tests
         m_cell = next_cell(m_cell, read_dimension)
         m_loc = join_location(m_sheet, m_cell)
+        last_item_range = m_loc
 
-    return tests_map
+    return tests_map, last_item_range, ids_not_allowed
 
 
 def _is_location_empty(drive, doc, loc):
