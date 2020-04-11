@@ -72,8 +72,6 @@ def run(read_dimension=drive.COLS_DIMENSION,
             last_item_range = next_cell_range(
                 last_item_range, drive.COLS_DIMENSION)
             ids_to_append.append(it.test_id)
-            #t = tests_map[it.test_id]
-            #t.first_message_range = ''
         # For existent test_ids with empty data, to be completed
         t = tests_map[it.test_id]
         t.append(it)
