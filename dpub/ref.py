@@ -222,8 +222,8 @@ def extend_cell_location_to_range(loc, majorDimension=drive.ROWS_DIMENSION):
     return join_location(sheet, '{}:{}'.format(cell, last_cell))
 
 
-def next_cell_range(loc, majorDimension=drive.COLS_DIMENSION):
-    '''Increments the range in one row position. '''
+def next_cell_range(loc, majorDimension):
+    '''Increments the range in one row position in the indicated direction. '''
 
     if loc is None:
         raise RefError('Cell to fetch spreadsheet info is None')
@@ -237,8 +237,8 @@ def next_cell_range(loc, majorDimension=drive.COLS_DIMENSION):
     return join_location(sheet, next_cell_value)
 
 
-def prev_cell_range(loc, majorDimension=drive.ROWS_DIMENSION):
-    '''Decrements the range in one row position. '''
+def prev_cell_range(loc, majorDimension):
+    '''Decrements the range in one row position in the indicated direction. '''
 
     if loc is None:
         raise RefError('Cell to fetch spreadsheet info is None')

@@ -69,7 +69,8 @@ def run(read_dimension=drive.COLS_DIMENSION,
                 it.test_id = "(unknown)"
             # TODO SEE WHAT TO DO HERE WITH THE ERROR MESSAGE
             tests_map[it.test_id] = Test(it.test_id, last_item_range)
-            last_item_range = next_cell_range(last_item_range)
+            last_item_range = next_cell_range(
+                last_item_range, drive.COLS_DIMENSION)
             ids_to_append.append(it.test_id)
             #t = tests_map[it.test_id]
             #t.first_message_range = ''
@@ -83,11 +84,11 @@ def run(read_dimension=drive.COLS_DIMENSION,
         spinner.write('Writting test {} ... '.format(t.id))
         m_range = t.first_message_range
         if t.id in ids_to_append:
-            values = output.compose_new_tests(t, mode)
+            values = output.compose(t, mode, True)
             m_range = prev_cell_range(m_range, drive.ROWS_DIMENSION)
             _write_messages(d, doc, values, m_range, write_dimension)
         else:
-            values = output.compose(t, mode)
+            values = output.compose(t, mode, False)
             _write_messages(d, doc, values, m_range, write_dimension)
 
     spinner.write('Done.')
