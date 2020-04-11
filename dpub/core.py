@@ -77,9 +77,9 @@ def run(read_dimension=drive.COLS_DIMENSION,
         t.append(it)
 
     # For every test, write the related traces
-    spinner.write('Writting results to spreadsheet ... ')
+    spinner.write('Writing results to spreadsheet ... ')
     for _, t in tests_map.items():
-        spinner.write('Writting test {} ... '.format(t.id))
+        spinner.write('Writing test {} ... '.format(t.id))
         m_range = t.first_message_range
         if t.id in ids_to_append:
             values = output.compose(t, mode, True)
@@ -115,7 +115,7 @@ def _read_tests_map(drive,
                     read_dimension=drive.COLS_DIMENSION,
                     write_dimension=drive.ROWS_DIMENSION):
     '''Reads the tests ids from the spreadsheet and composes a map
-    whose keys are the test ids and the values the range where writting
+    whose keys are the test ids and the values the range where writing
     the first trace message'''
     m_loc = first_msg_location
     m_sheet, m_cell = split_location(m_loc)
@@ -140,7 +140,7 @@ def _read_tests_map(drive,
             else:
                 ids_not_allowed.append(id)
 
-        # Even for empty rows, increase the cell where writting the output, to
+        # Even for empty rows, increase the cell where writing the output, to
         # Align it with the tests
         m_cell = next_cell(m_cell, read_dimension)
         m_loc = join_location(m_sheet, m_cell)
