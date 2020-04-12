@@ -14,7 +14,7 @@ class ModeError(Exception):
         super().__init__('Invalid mode: {}'.format(mode))
 
 
-def compose(test, mode, new_test, max=_CELL_MAX_CHARS):
+def compose(test, mode, new_test_id, max=_CELL_MAX_CHARS):
     '''Returns the values to write to the Drive spreadsheet depending
     on the mode
 
@@ -25,18 +25,21 @@ def compose(test, mode, new_test, max=_CELL_MAX_CHARS):
     if mode == 'message':
         # Every message is an element in the values array
         for it in test.items:
-            if new_test:
+            if new_test_id:
                 _append(values, test.id, max)
-            _append(values, it.request, max)
-            _append(values, it.response, max)
+            else:
+                _append(values, it.request, max)
+                _append(values, it.response, max)
     elif mode == 'profile':
         # Every profile trace is a value in the values array
         for it in test.items:
-            if new_test:
+            if new_test_id:
                 _append(values, test.id, max)
-            _append(values, _compose_profile_trace(it), max)
+            else:
+                _append(values, _compose_profile_trace(it), max)
     elif mode == 'test':
         # All traces are a single value in the values array
+        # TODO: adecuate this part to current development
         s = ''
         for it in test.items:
             s += '{}{}'.format(_compose_profile_trace(it),

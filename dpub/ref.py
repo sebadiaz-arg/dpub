@@ -250,3 +250,28 @@ def prev_cell_range(loc, majorDimension):
         raise RefError('Could not obtain previous cell for {}'.format(cell))
 
     return join_location(sheet, prev_cell_value)
+
+
+def prepare_id_range(loc, first_test_location, majorDimension=drive.ROWS_DIMENSION):
+    ''' Calculates the range to add a new test case id, fusioning 
+    the column letter of the first_test_location with the row of current test id. '''
+
+    if loc is None:
+        raise RefError('')
+
+    l_sheet, l_cell = split_location(loc)
+    l_letter, l_number = split_cell(l_cell)
+    f_sheet, f_cell = split_location(first_test_location)
+    f_letter, f_number = split_cell(f_cell)
+
+    if majorDimension == drive.ROWS_DIMENSION:
+        id_letter = f_letter
+        id_number = l_number
+    elif majorDimension == drive.COLS_DIMENSION:
+        id_letter = l_letter
+        id_number = f_number
+    else:
+        raise RefError('It is not a expected value {}'.format(majorDimension))
+    id_cell = join_cell(id_letter, id_number)
+
+    return join_location(l_sheet, id_cell)
