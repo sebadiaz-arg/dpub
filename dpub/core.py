@@ -7,7 +7,7 @@ import re
 
 from dpub import cli, drive, output, parser, pipe
 from dpub.ref import (extend_cell_location_to_range, join_location, next_cell,
-                      split_location, next_cell_range, prev_cell_range, prepare_id_range)
+                      split_location, next_cell_range, prepare_id_range)
 from dpub.spinner import Spinner
 
 
@@ -88,12 +88,8 @@ def run(read_dimension=drive.COLS_DIMENSION,
             id_range = prepare_id_range(
                 m_range, first_test_location, drive.ROWS_DIMENSION)
             _write_messages(d, doc, values, id_range, write_dimension)
-            # TODO: DEBO ESCRIBIR LOS TEST_ID EN REFERENCIA AL ARGUNENTO DE ENTRADA
-            # DEBO HACER UN 'VALUES' PARA LOS TEST_ID, CALCULAR LA UBICACION EN FUNCION DE LA ENTRADA
-            # Y DEL last_item_range, Y ESCRIBIRLO EN LA SHEET
             # Writing only a new test case data
             values = output.compose(t, mode, False)
-            #m_range = prev_cell_range(m_range, drive.ROWS_DIMENSION)
             _write_messages(d, doc, values, m_range, write_dimension)
         else:
             values = output.compose(t, mode, False)
