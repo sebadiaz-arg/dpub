@@ -17,6 +17,10 @@ def parse_args():
                         help='The cell where the first test identifier is. i.e. Hoja3!A2')
     parser.add_argument('first_msg_location',
                         help='The cell where the first message of the traces must be written. i.e. Hoja3!D2')
+    parser.add_argument('-r', '--result',
+                        help='The cell where the first test result (ok/nok) must be written. i.e. Hoja3!E2')
+    parser.add_argument('-a', '--asserts',
+                        help='The cell where the first test asserts (ok/nok) must be written. i.e. Hoja3!F2')
     parser.add_argument('-c', '--credentials', help='path to the credentials file', dest='credentials',
                         default='./{}'.format(CREDS_FILE))
     parser.add_argument('-t', '--token', help='path to the access token file',

@@ -7,15 +7,19 @@ import os
 import queue
 from enum import Enum
 
+from dpub import utils
+
 _PROFILE_HEADER_KEY = 'Profile:'
 _TEST_HEADER_KEY = 'Test:'
 
 _TEST_SIGNATURE_SEP = ' - '
 
 _MARK_SIZE = 30
-_END_OF_HEADERS_MARK = '=' * _MARK_SIZE
-_END_OF_REQUEST_MARK = '-' * _MARK_SIZE
-_END_OF_RESPONSE_MARK = '*' * _MARK_SIZE
+_END_OF_SECTION_MARK = '-' * _MARK_SIZE
+_END_OF_TEST_MARK = '=' * _MARK_SIZE
+
+_SUCCESS_PREFIX = 'Success:'
+_FAILURE_PREFIX = 'Fail:'
 
 
 class ParseError(Exception):
@@ -29,6 +33,12 @@ class Item:
         self.test_name = None
         self.request = None
         self.response = None
+        self.successful_asserts = None
+        self.failed_asserts = None
+
+    def success(self):
+        '''Returns true if the item failed asserts is an empty array'''
+        return self.failed_asserts is not None and len(self.failed_asserts) == 0
 
 
 def parse_item(q):
@@ -42,6 +52,7 @@ def parse_item(q):
     it = _parse_metadata(q, first_meta_header)
     it.request = _parse_request(q)
     it.response = _parse_response(q)
+    it.successful_asserts, it.failed_asserts = _parse_asserts(q)
     return it
 
 
@@ -66,7 +77,7 @@ def _move_to_first_not_empty_line(q):
 def _parse_metadata(q, line):
     '''Returns a parse item with the metadata populated'''
     it = Item()
-    while not _is_end_of_meta_headers(line):
+    while not _is_end_of_section(line):
         if _is_profile_meta_header(line):
             it.profile = _get_profile(line)
         elif _is_test_meta_header(line):
@@ -78,12 +89,26 @@ def _parse_metadata(q, line):
 
 def _parse_request(q):
     '''Returns the parsed request message'''
-    return _parse_message(q, _is_end_of_request)
+    return _parse_message(q, _is_end_of_section)
 
 
 def _parse_response(q):
     '''Returns the parsed response message'''
-    return _parse_message(q, _is_end_of_response)
+    return _parse_message(q, _is_end_of_section)
+
+
+def _parse_asserts(q):
+    '''Returns the parsed asserts'''
+    oks = []
+    fails = []
+    line = _read(q)
+    while not _is_end_of_test(line):
+        if line.startswith(_SUCCESS_PREFIX):
+            oks.append(line[len(_SUCCESS_PREFIX):].strip())
+        elif line.startswith(_FAILURE_PREFIX):
+            fails.append(line[len(_FAILURE_PREFIX):].strip())
+        line = _read(q)
+    return oks, fails
 
 
 def _parse_message(q, end_mark_fn):
@@ -96,23 +121,18 @@ def _parse_message(q, end_mark_fn):
     return d
 
 
-def _is_end_of_meta_headers(line):
-    '''Returns true if the line is the end of the headers section mark'''
-    return _is_end_of_section_mark(line, _END_OF_HEADERS_MARK)
+def _is_end_of_test(line):
+    '''Returns true if the line is the end of the test mark'''
+    return _is_separator_line(line, _END_OF_TEST_MARK)
 
 
-def _is_end_of_request(line):
-    '''Returns true if the line is the end of the request section mark'''
-    return _is_end_of_section_mark(line, _END_OF_REQUEST_MARK)
+def _is_end_of_section(line):
+    '''Returns true if the line is the end of a test section mark'''
+    return _is_separator_line(line, _END_OF_SECTION_MARK)
 
 
-def _is_end_of_response(line):
-    '''Returns true if the line is the end of the response section mark'''
-    return _is_end_of_section_mark(line, _END_OF_RESPONSE_MARK)
-
-
-def _is_end_of_section_mark(line, mark):
-    '''Returns true if reached the end of a section, determinated by
+def _is_separator_line(line, mark):
+    '''Returns true if reached the end of a section or test, determinated by
     the provided mark'''
     return line.startswith(mark)
 
@@ -123,8 +143,9 @@ def _get_test_signature(test_header):
 
 
 def _get_profile(profile_header):
-    '''Returns the profile in a profile header'''
-    return _meta_header_value(profile_header, _PROFILE_HEADER_KEY)
+    '''Returns the profile in a profile header removing any existing double quote'''
+    p = _meta_header_value(profile_header, _PROFILE_HEADER_KEY)
+    return utils.strip_double_quotes(p)
 
 
 def _meta_header_value(header, key):

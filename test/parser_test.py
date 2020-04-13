@@ -16,10 +16,9 @@ def _compose_queue(test_data):
 
 def test_parse_traces():
     test_data = '''
-
 Profile: +447521168738
 Test: 01-01 - Request User Profile
-================================================================
+----------------------------------------------------------------
 POST /product-management/v1/users/me/orders/unsubscribe HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer eyJraWQiOiI0ZjI0MzM3NTI2NThmYTBjMTg4ZDM2MTdmNmNjNDY5ZjQ5NzJiOWYiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyMDAwMDAwMDAwMDAwMDE2NTQ0OCIsImF1dGhvcml6YXRpb25faWQiOiJjNGJlMmQ4NC1jM2M5LTRhZjQtOGI4Yi03YjM4Y2M0YThiYWQiLCJwdXJwb3NlIjoiaWRlbnRpZnktY3VzdG9tZXIgY3VzdG9tZXItc2VsZi1zZXJ2aWNlIiwiaXNzIjoiaHR0cHM6XC9cL2F1dGgudWstY2VydDAuYmFpa2FscGxhdGZvcm0uY29tXC8iLCJhdXRoZW50aWNhdGlvbl9jb250ZXh0IjpbeyJpZGVudGlmaWVyIjoidGVzdDkxOTY1MjA4QHN0Zi5yZWYubzIuY28udWsiLCJ0eXBlIjoiZW1haWwifV0sImFjdGl2ZSI6dHJ1ZSwiY2xpZW50X2lkIjoibm92dW0tbXl0ZWxjbyIsImlkZW50aWZpZXJfYm91bmRfc2NvcGUiOltdLCJhdWQiOiJodHRwczpcL1wvYXBpLnVrLWNlcnQwLmJhaWthbHBsYXRmb3JtLmNvbSIsInNjb3BlIjoib2ZmbGluZV9hY2Nlc3Mgb3BlbmlkIGV2ZW50LWxvdy1kYXRhLXJlYWQgdXNlcnByb2ZpbGUtcmVhZCBhdXJhaWQtcmVhZCBteW8ybWlkZGxld2FyZS1yZWFkIHdlYnZpZXdzLXBob25lLW51bWJlci1yZWFkIGV2ZW50LXN1YnNjcmlwdGlvbi10eXBlLW1pZ3JhdGlvbi1yZWFkIGF1dGhlbnRpY2F0aW9uLWluZm9ybWF0aW9uLXJlYWQgZXZlbnQtbG93LXZvaWNlLXJlYWQgd2Vidmlld3MtdXNlci1yZWFkIHByb2R1Y3QtbWFuYWdlbWVudC1vcmRlcnMtdXNlci1yZWFkIGV2ZW50LWJhci1hbGVydC1yZWFkIGV2ZW50LW5vLWRhdGEtcmVhZCBleHBsb3JlLWNvbnRlbnQtY2FyZC1kZXRhaWxzLXBob25lLW51bWJlci1yZWFkIHN1YnNjcmliZWQtcHJvZHVjdHMtcmVhZCBtb2JpbGUtYmFsYW5jZS1yZWFkIGV2ZW50LW5vLWJhbGFuY2UtcmVhZCBzdWJzY3JpYmVkLXByb2R1Y3RzLXVzZXItcmVhZCBpbnZvaWNpbmctcGhvbmUtbnVtYmVyLXJlYWQgZXZlbnQtYXBwb2ludG1lbnQtcmVtaW5kZXItcmVhZCBldmVudC1pbnZvaWNlLWRlYml0LXJlYWQgZXZlbnQtcGF5bWVudC1hbGVydC1yZWFkIG15bzJtaWRkbGV3YXJlLXdyaXRlIGF1cmFpZC13cml0ZSBtb2JpbGUtcXVvdGEtcmVhZCBzdWJzY3JpYmVkLXByb2R1Y3RzLXBob25lLW51bWJlci1yZWFkIGV2ZW50LW5vLXZvaWNlLXJlYWQgbm90aWZpY2F0aW9ucy1yZWFkIGV2ZW50LWhpZ2gtc3BlbmQtYWxlcnQtcmVhZCB0aW1lbGluZS1yZWFkIHByb2R1Y3QtbWFuYWdlbWVudC1vcmRlcnMtdXNlci13cml0ZSBldmVudC1kaXNjb25uZWN0aW9uLWFsZXJ0LXJlYWQgZXZlbnQtaW52b2ljZS1wYXltZW50LWR1ZS1yZWFkIG1vYmlsZS1iYWxhbmNlLXRvcC11cC13cml0ZSBpbnZvaWNpbmctdXNlci1yZWFkIGV2ZW50LWxvdy1iYWxhbmNlLXJlYWQgcHJvZHVjdC1tYW5hZ2VtZW50LW9yZGVycy1waG9uZS1udW1iZXItd3JpdGUgZXhwbG9yZS1jb250ZW50LW1vZHVsZXMtdXNlci1yZWFkIGlzc3Vlcy1jcmVhdGUgZXhwbG9yZS1jb250ZW50LWNhcmQtZGV0YWlscy11c2VyLXJlYWQgbW9iaWxlLWJhbGFuY2UtdG9wLXVwLXJlYWQgaW52b2ljaW5nLXJlYWQgZXZlbnQtaW52b2ljZS1yZXRhaW5lZC1yZWFkIGV4cGxvcmUtY29udGVudC1tb2R1bGVzLXBob25lLW51bWJlci1yZWFkIHByb2R1Y3QtbWFuYWdlbWVudC1vcmRlcnMtcGhvbmUtbnVtYmVyLXJlYWQgaXNzdWVzLXJlYWQgZXZlbnQtaW52b2ljZS1jaGFyZ2UtcmVhZCIsImFjcl92YWx1ZXMiOiIzIiwiZXhwIjoxNTg0NzIyMzEyLCJpYXQiOjE1ODQ3MTg3MTIsImp0aSI6IjU0OWY5NGY5LWQwNGItNDAxNC05MzUyLTBhOGZhNTI3ODI1MSJ9.ULKQ3FnZ-8bONmiBkBKsK-4waxsmjU_ieegEaPNsA6jwJqYprC2qab0wEbaT1ZtqBA0KhLViZo0qhNFNZJdfWd0hTDcL3Q_2TJ953UcF0ylLnA1DfraZkiEw7LVBxdRoi4zUI9r_kiryczSEVxd0-6ZUWQeW38XaZ_x4hb9FtCy6RS06KrG1VYCpJN-kEyw054ptiNsIgymjpcfRjx9WPsS_TLbCQg-rBLDZX-Fy0Qh4J-1FzO61VHfIuzO6SZwAP0DlduPhxQ8xSBusYp9MR5jvhtmaFTQQZritKaq9wjdvw7IDFEDB_PuEeBsIAoXwKorP1G5TNbJhTf_pq07dfg
@@ -49,7 +48,10 @@ X-Xss-Protection: 1; mode=block
 Content-Type: text/plain; charset=utf-8
 
 {"code": "UNAUTHENTICATED", "message":"token expired"}
-*******************************************************
+----------------------------------------------------------------
+Fail: Swagger validation - AssertionError - Response code 401 not found in swagger for the request
+Success: Response time is less than 1s
+================================================================
 '''
     # Enqueue the trace lines
     q = _compose_queue(test_data)
@@ -120,6 +122,11 @@ Content-Type: text/plain; charset=utf-8\
 \
 {"code": "UNAUTHENTICATED", "message":"token expired"}'
 
+    assert len(it.successful_asserts) == 1
+    assert it.successful_asserts[0] == 'Response time is less than 1s'
+    assert len(it.failed_asserts) == 1
+    assert it.failed_asserts[0] == 'Swagger validation - AssertionError - Response code 401 not found in swagger for the request'
+
 
 def test_parse_traces_return_no_item():
     test_data = '''
@@ -139,11 +146,12 @@ def test_parse_traces_with_empty_meta_header():
     test_data = '''
 Profile:
 Test: 01-01 - Request User Profile
-================================================================
+----------------------------------------------------------------
 
 ----------------------------------------------------------------
 
-*******************************************************
+----------------------------------------------------------------
+================================================================
 '''
     # Enqueue the test data
     q = _compose_queue(test_data)
@@ -153,3 +161,5 @@ Test: 01-01 - Request User Profile
     
     # Validate
     assert not it.profile
+    assert len(it.successful_asserts) == 0
+    assert len(it.failed_asserts) == 0

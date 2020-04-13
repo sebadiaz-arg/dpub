@@ -14,7 +14,7 @@ class ModeError(Exception):
         super().__init__('Invalid mode: {}'.format(mode))
 
 
-def compose(test, mode, new_test_id, max=_CELL_MAX_CHARS):
+def compose_msgs(test, mode, new_test_id=False, max=_CELL_MAX_CHARS):
     '''Returns the values to write to the Drive spreadsheet depending
     on the mode
 
@@ -49,6 +49,42 @@ def compose(test, mode, new_test_id, max=_CELL_MAX_CHARS):
         raise ModeError(mode)
 
     return values
+
+
+def compose_result(test):
+    '''Returns the values to write the test result'''
+    if not test:
+        return None
+
+    if test.success():
+        return "OK"
+    return "NOK"
+
+
+def compose_asserts_string(test, include_successful=False):
+    '''Returns the result as a string of all failed asserts for
+    all the items of a single test, detailing its results and the
+    profile it applies if there are more than one.
+    Additional, can include the successful asserts as well'''
+    asserts = ''
+    # Differentiate the profiles only if there's more than one profile
+    include_profile = len(test.items) > 1
+
+    for it in test.items:
+        if include_profile:
+            asserts += '{}:{}'.format(it.profile, os.linesep)
+
+        if include_successful:
+            item_asserts = it.successful_asserts + it.failed_asserts
+        else:
+            item_asserts = it.failed_asserts
+
+        for a in item_asserts:
+            # Asserts for this profile have one blank padding when multiprofile
+            if include_profile:
+                asserts += ' '
+            asserts += '{}{}'.format(a, os.linesep)
+    return asserts
 
 
 def _compose_profile_trace(it):

@@ -35,8 +35,10 @@ There is a _run.sh_ launcher to execute the tool. It takes these parameters:
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | -------------------------------------------- |
 | doc             | identifier of the spreadsheet where publishing                                                                                                                    | yes       | 1o8wahJ8qTIlHgAMQIMhxFq9bBmfIrlFvoEhkAJ3APFg |
 | first test cell | cell where first test identifier is located                                                                                                                       | yes       | TEST!A2                                      |
-| first msg cell  | cell where writing the results of the first test                                                                                                                  | yes       | TEST!C2                                      |
-| -m --mode       | how to write into the spreadsheet. 'message' writes a message per cell; 'profile' writes every profile trace in a cell; 'test' writes every test in a single cell | no        | -m all                                       |
+| first msg cell  | cell where writting the results of the first test                                                                                                                 | yes       | TEST!C2                                      |
+| -m --mode       | how to write into the spreadsheet. 'message' writes a message per cell; 'profile' writes every profile trace in a cell; 'test' writes every test in a single cell | no        | -m test               
+| -r --result       | The cell where the first test result (ok/nok) must be written. i.e. Hoja3!E2 | no        | -r 'Hoja!E3'   
+| -a --asserts       | The cell where the first test asserts (ok/nok) must be written. i.e. Hoja3!F2 | no        | -a 'Hoja!D3'                           |
 
 ## Execution example
 

@@ -3,7 +3,7 @@
 # Copyright (C) 2020 Telefónica S.A. All Rights Reserved
 #
 
-from dpub.output import compose, ModeError
+from dpub.output import compose_msgs, ModeError
 # Renaming required for not pytest drive crazy with the 'Test' name
 from dpub.core import Test as T
 from dpub.parser import Item
@@ -21,7 +21,7 @@ def test_compose_output():
         t.append(it)
 
     # Process 'message' mode
-    values = compose(t, 'message')
+    values = compose_msgs(t, 'message')
 
     # Validate
     assert len(values) == n*2
@@ -33,7 +33,7 @@ def test_compose_output():
         i += 1
 
     # Process 'profile' mode
-    values = compose(t, 'profile')
+    values = compose_msgs(t, 'profile')
 
     # Validate
     assert len(values) == n
@@ -44,7 +44,7 @@ def test_compose_output():
         i += 1
 
     # Process 'test' mode
-    values = compose(t, 'test')
+    values = compose_msgs(t, 'test')
 
     # Validate
     assert len(values) == 1
@@ -54,7 +54,7 @@ def test_compose_output():
 
     # Validate 'invalid' mode
     with pytest.raises(ModeError):
-        compose(t, 'invalid')
+        compose_msgs(t, 'invalid')
 
 
 def _the_request(i):

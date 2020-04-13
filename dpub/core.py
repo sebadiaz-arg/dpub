@@ -4,6 +4,7 @@
 #
 
 import re
+import os
 
 from dpub import cli, drive, output, parser, pipe
 from dpub.ref import (extend_cell_location_to_range, join_location, next_cell,
@@ -16,14 +17,29 @@ class DPubError(Exception):
 
 
 class Test:
-    def __init__(self, id, first_message_range):
+    '''The representation of an executed test and its results per profile. 
+    It also includes the representation of where the results must be allocated
+    in the final document'''
+
+    def __init__(self, id, first_message_location, result_location=None, asserts_location=None):
+        '''Creates an instance of Test'''
         self.id = id
-        self.first_message_range = first_message_range
+        self.first_message_location = first_message_location
+        self.result_location = result_location
+        self.asserts_location = asserts_location
         self.items = []
 
     def append(self, item):
         '''Appends a test item'''
         self.items.append(item)
+
+    def success(self):
+        '''Returns true if response of the test was successful
+        for all the composing items'''
+        for i in self.items:
+            if not i.success():
+                return False
+        return True
 
 
 def _validate_cell_ref(cell_ref):
@@ -44,6 +60,8 @@ def run(read_dimension=drive.COLS_DIMENSION,
     doc = args.spreadsheet
     first_test_location = args.first_test_location
     first_msg_location = args.first_msg_location
+    first_result_location = args.result
+    first_asserts_location = args.asserts
     mode = args.mode
 
     spinner.write('Setup Google Drive access ... ')
@@ -53,7 +71,7 @@ def run(read_dimension=drive.COLS_DIMENSION,
     items = _compose_items()
     last_item_range = ''
     tests_map, last_item_range, ids_not_allowed = _read_tests_map(
-        d, doc, first_test_location, first_msg_location, spinner, read_dimension, write_dimension)
+        spinner, d, doc, first_test_location, first_msg_location, first_result_location, first_asserts_location, read_dimension, write_dimension)
 
     ids_to_append = []
     # Append the items to the tests. If having one profile there will be one
@@ -80,20 +98,33 @@ def run(read_dimension=drive.COLS_DIMENSION,
     # For every test, write the related traces
     spinner.write('Writing results to spreadsheet ... ')
     for _, t in tests_map.items():
-        spinner.write('Writing test {} ... '.format(t.id))
-        m_range = t.first_message_range
+        # Skip tests empty on items, because they can be headers of other tests
+        if len(t.items) == 0:
+            continue
+
+        spinner.write('Writting test {} ... '.format(t.id))
+        m_range = t.first_message_location
+
         if t.id in ids_to_append:
             # Writing only a new test case id
-            values = output.compose(t, mode, True)
+            values = output.compose_msgs(t, mode, True)
             id_range = prepare_id_range(
                 m_range, first_test_location, drive.ROWS_DIMENSION)
             _write_messages(d, doc, values, id_range, write_dimension)
             # Writing only a new test case data
-            values = output.compose(t, mode, False)
+            values = output.compose_msgs(t, mode, False)
             _write_messages(d, doc, values, m_range, write_dimension)
         else:
-            values = output.compose(t, mode, False)
+            values = output.compose_msgs(t, mode, False)
             _write_messages(d, doc, values, m_range, write_dimension)
+
+        if t.result_location:
+            res = output.compose_result(t)
+            d.write_one(doc, t.result_location, res)
+
+        if t.asserts_location:
+            asserts = output.compose_asserts_string(t)
+            d.write_one(doc, t.asserts_location, asserts)
 
     spinner.write('Done.')
     spinner.end()
@@ -113,16 +144,26 @@ def _compose_items():
     return items
 
 
-def _read_tests_map(drive,
+def _read_tests_map(spinner,
+                    drive,
                     doc,
                     first_test_location,
                     first_msg_location,
-                    spinner,
+                    first_result_location=None,
+                    first_asserts_location=None,
                     read_dimension=drive.COLS_DIMENSION,
                     write_dimension=drive.ROWS_DIMENSION):
     '''Reads the tests ids from the spreadsheet and composes a map
     whose keys are the test ids and the values the range where writing
     the first trace message'''
+    r_loc = first_result_location
+    if first_result_location:
+        r_sheet, r_cell = split_location(r_loc)
+
+    a_loc = first_asserts_location
+    if first_asserts_location:
+        a_sheet, a_cell = split_location(a_loc)
+
     m_loc = first_msg_location
     m_sheet, m_cell = split_location(m_loc)
 
@@ -142,7 +183,7 @@ def _read_tests_map(drive,
             # test. Only destination empty cells will be written
             if _is_location_empty(drive, doc, m_loc):
                 spinner.write('Reading test {} ... '.format(id))
-                tests_map[id] = Test(id, m_loc)
+                tests_map[id] = Test(id, m_loc, r_loc, a_loc)
             else:
                 ids_not_allowed.append(id)
 
@@ -151,6 +192,14 @@ def _read_tests_map(drive,
         m_cell = next_cell(m_cell, read_dimension)
         m_loc = join_location(m_sheet, m_cell)
         last_item_range = m_loc
+
+        if r_loc:
+            r_cell = next_cell(r_cell, read_dimension)
+            r_loc = join_location(r_sheet, r_cell)
+
+        if a_loc:
+            a_cell = next_cell(a_cell, read_dimension)
+            a_loc = join_location(a_sheet, a_cell)
 
     return tests_map, last_item_range, ids_not_allowed
 

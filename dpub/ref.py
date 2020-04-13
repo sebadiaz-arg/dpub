@@ -15,7 +15,7 @@ class RefError(Exception):
     pass
 
 
-def next_cell(cell, majorDimension=drive.ROWS_DIMENSION):
+def next_cell(cell, majorDimension=drive.COLS_DIMENSION):
     '''Calculate next cell to read, considering that cell value
     does not include the sheet part'''
     if cell is None:
@@ -202,6 +202,9 @@ def _join(a, b, separator=''):
     two cells to compose a cells range
     a sheet with a cells range to compose a location reference
     '''
+    if not a or not b:
+        raise RefError('Missing required parameter')
+
     return '{}{}{}'.format(a, separator, b)
 
 
