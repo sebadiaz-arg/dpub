@@ -5,14 +5,14 @@
 
 from dpub.output import compose_msgs, ModeError
 # Renaming required for not pytest drive crazy with the 'Test' name
-from dpub.core import Test as T
+from dpub.tests import Test as T
 from dpub.parser import Item
 import pytest
 
 
 def test_compose_output():
     # Prepare
-    t = T('id', 'Test!A1')
+    t = T('id', 'name', 'Test!A1', 'Test!A2', 'Test!C1')
     n = 10
     for i in range(n):
         it = Item()

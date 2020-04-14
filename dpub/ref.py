@@ -23,13 +23,18 @@ def next_cell(cell, majorDimension=drive.COLS_DIMENSION):
     letter, number = split_cell(cell)
 
     if majorDimension == drive.COLS_DIMENSION:
-        number += 1
+        number = next_row(number)
     elif majorDimension == drive.ROWS_DIMENSION:
         letter = next_col(letter)
     else:
         raise RefError('Could not obtain next cell for {}'.format(cell))
 
     return join_cell(letter, number)
+
+
+def next_row(row):
+    '''Increases a row in one unit'''
+    return row + 1
 
 
 def next_col(col):
@@ -278,3 +283,53 @@ def prepare_id_range(loc, first_test_location, majorDimension=drive.ROWS_DIMENSI
     id_cell = join_cell(id_letter, id_number)
 
     return join_location(l_sheet, id_cell)
+
+
+def get_fixed_cell_part(cell, dimension=drive.COLS_DIMENSION):
+    '''Returns the fixed part of the cell. When
+    moving along columns, that will be the row number, when
+    moving along rows, that will be the column number'''
+    return _get_cell_part(cell, dimension, fixed_part=True)
+
+
+def get_movable_cell_part(cell, dimension=drive.COLS_DIMENSION):
+    '''Returns the movable part of a cell. When moving
+    along columns, that is the column. When moving on rows
+    that is the row'''
+    return _get_cell_part(cell, dimension, fixed_part=False)
+
+
+def _get_cell_part(cell, dimension, fixed_part):
+    '''Returns the fixed or movable part of a cell'''
+    if not cell:
+        raise RefError('Empty cell')
+
+    if not dimension:
+        raise RefError('Empty dimension value')
+
+    if dimension is not drive.COLS_DIMENSION and dimension is not drive.ROWS_DIMENSION:
+        raise RefError('Invalid dimension')
+
+    letter, number = split_cell(cell)
+
+    if fixed_part:
+        if dimension is drive.COLS_DIMENSION:
+            return letter
+        return number
+    else:
+        if dimension is drive.COLS_DIMENSION:
+            return number
+        return letter
+
+
+def opposite_dimension(dimension):
+    '''Returns the opposite dimension'''
+    if not dimension:
+        raise RefError('Empty dimension')
+
+    if dimension is not drive.ROWS_DIMENSION and dimension is not drive.COLS_DIMENSION:
+        raise RefError('Invalid dimension')
+
+    if dimension == drive.COLS_DIMENSION:
+        return drive.ROWS_DIMENSION
+    return drive.COLS_DIMENSION

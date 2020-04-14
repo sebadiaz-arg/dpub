@@ -185,7 +185,7 @@ def _split_test_signature(signature):
             'Could not split test signature: {}'.format(signature))
 
     if len(tokens) == 1:
-        return signature, signature
+        return signature, None
 
     return tokens
 

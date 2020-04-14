@@ -9,7 +9,7 @@ from dpub.drive import COLS_DIMENSION, ROWS_DIMENSION
 from dpub.ref import (_LAST_COLUMN, _LAST_ROW, RefError,
                       extend_cell_location_to_range, join_cell, join_location,
                       join_range, next_cell, next_col, split_cell,
-                      split_location)
+                      split_location, get_fixed_cell_part)
 
 
 class TData:
@@ -171,3 +171,14 @@ def test_extend_cell_location_to_range():
 
     for d in test_data:
         assert extend_cell_location_to_range(*d.args) == d.expected
+
+
+def test_get_fixed_cell_part():
+    test_data = [
+        TData(['A3', COLS_DIMENSION], 'A'),
+        TData(['A3', ROWS_DIMENSION], 3),
+        TData(['A3'], 'A')
+    ]
+
+    for d in test_data:
+        assert get_fixed_cell_part(*d.args) == d.expected

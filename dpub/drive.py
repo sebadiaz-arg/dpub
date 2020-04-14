@@ -29,34 +29,34 @@ class PublishToDriveError(Exception):
 class ReadFromDriveError(Exception):
     pass
 
-
 class Drive:
-    def __init__(self, client_secrets_file=CREDS_FILE, token_pickle_file=TOKEN_PICKLE):
+    def __init__(self, doc, client_secrets_file=CREDS_FILE, token_pickle_file=TOKEN_PICKLE):
         self.credentials = _lookup_credentials(
             client_secrets_file, token_pickle_file)
+        self.doc = doc
 
-    def read_one(self, doc, range):
+    def read_one(self, range):
         '''Returns the first value of a provided range'''
-        vals = self.read(doc, range)
+        vals = self.read(range)
         if vals is None or len(vals) == 0:
             return ''
         return vals[0]
 
-    def write_one(self, doc, range, value):
+    def write_one(self, range, value):
         '''Writes a single value in a single cell'''
         values = [
             value,
         ]
-        self.write(doc, range, values)
+        self.write(range, values)
 
-    def read(self, doc, range, dimension=COLS_DIMENSION):
+    def read(self, range, dimension=COLS_DIMENSION):
         '''Reads a range of data from a spreadsheet'''
         srv = self._service()
-        r = srv.spreadsheets().values().get(spreadsheetId=doc, range=range).execute()
+        r = srv.spreadsheets().values().get(spreadsheetId=self.doc, range=range).execute()
         v_table = r.get('values', [])
         return _reduce_dimension(v_table)
 
-    def write(self, doc, range, values, dimension=ROWS_DIMENSION):
+    def write(self, range, values, dimension=ROWS_DIMENSION):
         '''Writes certain content to a range in a spreadsheet'''
         srv = self._service()
         body = {
@@ -64,7 +64,7 @@ class Drive:
             'majorDimension': dimension,
             'values': [values],
         }
-        srv.spreadsheets().values().update(spreadsheetId=doc, range=range,
+        srv.spreadsheets().values().update(spreadsheetId=self.doc, range=range,
                                            body=body, valueInputOption='RAW').execute()
 
     def _service(self):
