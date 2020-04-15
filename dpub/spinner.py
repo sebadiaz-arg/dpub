@@ -80,6 +80,6 @@ class Spinner:
             sys.stdout.write('\b' * len(self.sentence))
             # Due to jump start we have to cleanup one more char
             sys.stdout.write(' ' * (len(self.sentence)+1))
-            sys.stdout.flush()
             sys.stdout.write('\b' * (len(self.sentence)+1))
             sys.stdout.flush()
+            time.sleep(self.delay)

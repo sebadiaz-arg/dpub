@@ -29,6 +29,7 @@ class PublishToDriveError(Exception):
 class ReadFromDriveError(Exception):
     pass
 
+
 class Drive:
     def __init__(self, doc, client_secrets_file=CREDS_FILE, token_pickle_file=TOKEN_PICKLE):
         self.credentials = _lookup_credentials(
@@ -66,6 +67,28 @@ class Drive:
         }
         srv.spreadsheets().values().update(spreadsheetId=self.doc, range=range,
                                            body=body, valueInputOption='RAW').execute()
+
+    def batch_write(self, data_map, dimension=COLS_DIMENSION):
+        '''Writes certain data including different ranges in different dimensions
+        in a batch mode. The data map input parameter has as key a location range and
+        as value the values to write'''
+        srv = self._service()
+
+        data = []
+        for k, v in data_map.items():
+            data.append({
+                'range': k,
+                'majorDimension': dimension,
+                'values': [v],
+            })
+
+        body = {
+            'valueInputOption': 'RAW',
+            'data': data
+        }
+
+        srv.spreadsheets().values().batchUpdate(
+            spreadsheetId=self.doc, body=body).execute()
 
     def _service(self):
         return build(_SHEETS_SERVICE, _SHEETS_SERVICE_VERSION, credentials=self.credentials)

@@ -35,8 +35,10 @@ def run(dimension=drive.COLS_DIMENSION):
     first_asserts_location = args.asserts
     mode = args.mode
 
+    # Authenticate with Drive
     spinner.write('Setup Google Drive access ... ')
     d = drive.Drive(doc, creds, token)
+    # Create the tests loader
     loader = Loader(d,
                     first_id_location,
                     first_msg_location,
@@ -44,13 +46,20 @@ def run(dimension=drive.COLS_DIMENSION):
                     first_asserts_location,
                     dimension)
 
+    # Read spreadsheet existing test ids
     ids_range = extend_cell_location_to_range(first_id_location, dimension)
     ids = d.read(ids_range, dimension)
+    # Read spreadsheet existing test traces
+    msgs_range = extend_cell_location_to_range(first_msg_location, dimension)
+    msgs = d.read(msgs_range, dimension)
 
+    # Load the tests not having already msg traces
     spinner.write('Reading existing tests ... ')
-    tests_map = loader.load(ids)
+    tests_map = loader.load(ids, msgs)
     spinner.write('Read existing tests completed. ')
 
+    # Create a map with all traces belonging to tests not defined in the
+    # spreadsheet. They will be appended at the end of the document
     new_tests_map = {}
 
     # Complete tests with the parsed items
@@ -78,8 +87,10 @@ def run(dimension=drive.COLS_DIMENSION):
     # Join both old and new tests in a single map before writing
     tests_map.update(new_tests_map)
 
+
     # Write them to drive
     spinner.write('Writing results to spreadsheet ... ')
+    data_map = {}
     for _, t in tests_map.items():
         # Skip tests empty on items, because they can be headers of other not valid spreadsheet lines taken as tests
         if len(t.items) == 0:
@@ -88,21 +99,22 @@ def run(dimension=drive.COLS_DIMENSION):
         spinner.write('Writting test {} ... '.format(t.id))
 
         if t.new:
-            d.write_one(t.id_location, t.id)
+            data_map[t.id_location] = [t.id]
             if t.name:
-                d.write_one(t.name_location, t.name)
+                data_map[t.name_location] = [t.name]
 
         msg_values = output.compose_msgs(t, mode)
-        d.write(t.first_message_location, msg_values,
-                opposite_dimension(dimension))
+        data_map[t.first_message_location] = msg_values
 
         if t.result_location:
             res = output.compose_result(t)
-            d.write_one(t.result_location, res)
-
+            data_map[t.result_location] = [res]
         if t.asserts_location:
             asserts = output.compose_asserts_string(t)
-            d.write_one(t.asserts_location, asserts)
+            data_map[t.asserts_location] = [asserts]
+
+    spinner.write('Flush ... ')
+    d.batch_write(data_map, opposite_dimension(dimension))
 
     spinner.write('Done.')
     spinner.end()

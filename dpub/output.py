@@ -33,11 +33,11 @@ def compose_msgs(test, mode, max=_CELL_MAX_CHARS):
             _append(values, _compose_profile_trace(it), max)
     elif mode == 'test':
         # All traces are a single value in the values array
-        # TODO: adecuate this part to current development
         s = ''
-        for it in test.items:
-            s += '{}{}'.format(_compose_profile_trace(it),
-                               _profile_separator())
+        for idx, it in enumerate(test.items):
+            s += _compose_profile_trace(it)
+            if idx > 0:
+                s += _profile_separator()
         _append(values, s, max)
     else:
         raise ModeError(mode)

@@ -90,20 +90,22 @@ class Loader:
             self._ass_sheet, c = split_location(first_asserts_loc)
             self._ass_fixed = get_fixed_cell_part(c, self._dim)
 
-    def load(self, ids):
+    def load(self, ids, msgs):
         '''From a list of test identifiers, compose the test objects.
         For every read id, the writable cells are incremented in their
         movable dimension (Depending if writing in rows or in columns)'''
         tests_map = {}
         for id in ids:
+            # Obtain the associated msg_content
+            msg_content = None
+            if len(msgs) > 0:
+                msg_content = msgs.pop(0)
+
             # Skip empty ids. They belong to intermediate empty rows or columns when reading existing tests
             if len(id) > 0:
-                # Read at m_loc. If m_loc content is not empty at the sheet, skip the
-                # test. Only destination empty cells for messages will be written
-                m_loc = self._msg_loc()
-                if self._is_location_empty(m_loc):
+                if not msg_content:
                     tests_map[id] = Test(
-                        id, None, self._id_loc(), self._name_loc(), m_loc, self._res_loc(), self._ass_loc())
+                        id, None, self._id_loc(), self._name_loc(), self._msg_loc(), self._res_loc(), self._ass_loc())
 
             # Increment movable dimension
             self._inc()
