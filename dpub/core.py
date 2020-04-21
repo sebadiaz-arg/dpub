@@ -21,11 +21,11 @@ class DPubError(Exception):
 def run(dimension=drive.COLS_DIMENSION):
     '''Parses the input read from stdin and publishes it to
     the drive spreadsheet'''
+    args = cli.parse_args()
     spinner = Spinner()
     spinner.write('Reading from stdin ... ')
 
     # Parse cli input parameters
-    args = cli.parse_args()
     doc = args.spreadsheet
     creds = args.credentials
     token = args.token
@@ -86,7 +86,6 @@ def run(dimension=drive.COLS_DIMENSION):
 
     # Join both old and new tests in a single map before writing
     tests_map.update(new_tests_map)
-
 
     # Write them to drive
     spinner.write('Writing results to spreadsheet ... ')
