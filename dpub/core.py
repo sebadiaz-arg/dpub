@@ -34,6 +34,7 @@ def run(dimension=drive.COLS_DIMENSION):
     first_result_location = args.result
     first_asserts_location = args.asserts
     mode = args.mode
+    append_new = args.append_new
 
     # Authenticate with Drive
     spinner.write('Setup Google Drive access ... ')
@@ -66,7 +67,7 @@ def run(dimension=drive.COLS_DIMENSION):
     items = _compose_items()
     for it in items:
         id = it.test_id
-        if id not in ids:
+        if id not in ids and append_new:
             # Not recognized id in the spreadsheet is added in a map as well
             # as its related name (both got from traces item) to compose new tests
             # to be appended at the end of the spreadsheet

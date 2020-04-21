@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument('-m', '--mode',
                         help='mode to write in the spreadsheet. Possible values are \'test\' \'profile\' and \'message\' (default)',
                         dest='mode', default='message')
+    parser.add_argument('--append-new', help='Appends new tests if they are not found in the spreadsheet', dest='append_new', action='store_true')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)

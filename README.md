@@ -39,6 +39,7 @@ There is a _run.sh_ launcher to execute the tool. It takes these parameters:
 | -m --mode       | how to write into the spreadsheet. 'message' writes a message per cell; 'profile' writes every profile trace in a cell; 'test' writes every test in a single cell | no        | -m test               
 | -r --result       | The cell where the first test result (ok/nok) must be written. i.e. Hoja3!E2 | no        | -r 'Hoja!E3'   
 | -a --asserts       | The cell where the first test asserts (ok/nok) must be written. i.e. Hoja3!F2 | no        | -a 'Hoja!D3'                           |
+| --append-new    | Appends tests found in the newman collection at the end of the spreadsheet | no | --append-new
 
 ## Execution example
 
